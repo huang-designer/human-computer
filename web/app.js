@@ -10,6 +10,7 @@ const S = {
   t0: 0,
   expanded: new Set(),
   flags: new Set(),
+  decisions: {},      // interactionId -> optionId（仅 C 条件）
   events: 0,
 };
 
@@ -121,6 +122,7 @@ async function loadSession() {
   S.session = await r.json();
   S.expanded.clear();
   S.flags.clear();
+  S.decisions = {};
   render();
   startTimer();
   log("view_task", {});
@@ -143,16 +145,21 @@ function render() {
 
   const parts = [renderRecommendation(s, spec)];
   if ((spec.show || []).includes("agents")) parts.push(renderAgents(s));
+  if ((spec.show || []).includes("interactions") && (s.interactions || []).length) parts.push(renderInteractions(s));
   if ((spec.show || []).includes("disagreements") && (s.disagreements || []).length) parts.push(renderDisagreements(s));
   if ((spec.show || []).includes("steps")) parts.push(renderSteps(s));
   $("content").innerHTML = parts.join("");
   bindDynamic();
 
   $("actionCard").hidden = false;
+  const pending = (s.interactions || []).filter((it) => !S.decisions[it.id]);
   $("actionHint").textContent =
     s.condition === "C"
-      ? "可以展开每一步查看证据来源；发现某一步有问题，点该步的「标记有误」。"
+      ? pending.length
+        ? `还有 ${pending.length} 个需要你参与的决定（见上方「需要你参与」）。`
+        : "已处理全部协作点。你也可以直接推翻系统建议。"
       : "如果不同意系统建议，可以换成别的机型，或直接判定没有机型满足条件。";
+  applyInteractionDefaults();
 
   const rec = s.recommendation || {};
   const acceptLabel = document.querySelector('label.opt span');
@@ -191,6 +198,75 @@ function renderRecommendation(s, spec) {
       </div>
       <p class="hint">${esc(spec.description || "")}</p>
     </div>`;
+}
+
+function renderInteractions(s) {
+  const human = (s.agents || []).find((a) => a.id === "human_agent");
+  const cards = s.interactions.map((it) => {
+    const chosen = S.decisions[it.id];
+    const opts = it.options.map((o) => `
+      <label class="opt ${chosen === o.id ? "picked" : ""}">
+        <input type="radio" name="it_${esc(it.id)}" value="${esc(o.id)}" ${chosen === o.id ? "checked" : ""} />
+        <span>${esc(o.label)}</span>
+        ${o.agent_id ? `<span class="who-tag">${esc(agentName(s, o.agent_id))}</span>` : ""}
+      </label>`).join("");
+    return `
+      <div class="interaction ${chosen ? "done" : ""}" data-it="${esc(it.id)}">
+        <div class="it-head">
+          <span class="it-type">${it.type === "arbitrate" ? "需要你裁决" : it.type === "confirm" ? "需要你确认" : "需要你补充"}</span>
+          <span class="it-title">${esc(it.title)}</span>
+          ${chosen ? '<span class="it-done">已处理</span>' : ""}
+        </div>
+        <p class="it-prompt">${esc(it.prompt)}</p>
+        <div class="decide">${opts}</div>
+      </div>`;
+  }).join("");
+  return `
+    <div class="card interaction-card">
+      <h3 class="block-title">需要你参与${human ? "" : "（人来担任团队的第 6 个角色）"}</h3>
+      ${cards}
+    </div>`;
+}
+
+/* 把交互点的选择映射到「你的决定」面板上，避免被试重复操作 */
+function applyInteractionDefaults() {
+  const s = S.session;
+  if (!s) return;
+  let suggest = "";
+  for (const it of s.interactions || []) {
+    const o = it.options.find((x) => x.id === S.decisions[it.id]);
+    if (o && o.suggest_id) suggest = o.suggest_id;
+    if (o && o.id === "reject") suggest = "";
+  }
+  const recId = (s.recommendation || {}).id || s.final_answer;
+  if (!suggest) return;
+  if (suggest === recId) {
+    document.querySelector('input[name="decide"][value="accept"]').checked = true;
+    $("otherSel").disabled = true;
+  } else {
+    document.querySelector('input[name="decide"][value="other"]').checked = true;
+    $("otherSel").value = suggest;
+    $("otherSel").disabled = false;
+  }
+}
+
+function bindInteractions() {
+  document.querySelectorAll("[data-it] input[type=radio]").forEach((r) => {
+    r.onchange = () => {
+      const itId = r.closest("[data-it]").dataset.it;
+      const it = (S.session.interactions || []).find((x) => x.id === itId);
+      const opt = it.options.find((o) => o.id === r.value);
+      S.decisions[itId] = r.value;
+      log("resolve_interaction", {
+        interaction: itId,
+        type: it.type,
+        option: r.value,
+        suggest_id: opt ? opt.suggest_id : "",
+      });
+      render();
+      $("actionCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+  });
 }
 
 function renderAgents(s) {
@@ -263,6 +339,7 @@ function bindDynamic() {
       render();
     };
   });
+  bindInteractions();
   document.querySelectorAll("[data-flag]").forEach((b) => {
     b.onclick = () => {
       const i = Number(b.dataset.flag);
@@ -287,12 +364,19 @@ function submit() {
   const userAnswer = currentChoice();
   const elapsed = Date.now() - S.t0;
 
+  const resolved = (s.interactions || []).map((it) => ({
+    interaction: it.id,
+    type: it.type,
+    option: S.decisions[it.id] || null,
+  }));
+
   log("submit", {
     mode,
     user_answer: userAnswer,
     note: $("note").value.trim(),
     expanded_steps: [...S.expanded],
     flagged_steps: [...S.flags],
+    interactions: resolved,
   });
 
   fetch("/api/response", {
@@ -310,6 +394,8 @@ function submit() {
       elapsed_ms: elapsed,
       expanded_steps: [...S.expanded],
       flagged_steps: [...S.flags],
+      interactions: resolved,
+      unresolved_interactions: (s.interactions || []).filter((it) => !S.decisions[it.id]).length,
     }),
   }).catch(() => {});
 

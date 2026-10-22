@@ -173,6 +173,7 @@
               }
             }
           ],
+          "interactions": [],
           "error_markers": []
         },
         "B": {
@@ -341,6 +342,7 @@
               }
             }
           ],
+          "interactions": [],
           "error_markers": []
         },
         "C": {
@@ -507,6 +509,28 @@
                 "chosen_agent": "master_agent",
                 "reason": "预算必须满足，且云舟 A16 内存实际不足 16GB，故采纳成本 Agent 的方向并改为推荐磐石 T15。"
               }
+            }
+          ],
+          "interactions": [
+            {
+              "id": "I1",
+              "type": "confirm",
+              "at_step": 5,
+              "title": "确认最终建议",
+              "prompt": "主控准备推荐 磐石 T15（实际售价 5999 元，独显，16GB 内存，2.15kg）。是否采纳？",
+              "options": [
+                {
+                  "id": "confirm",
+                  "label": "确认采纳",
+                  "suggest_id": "PS-T15",
+                  "agent_id": "master_agent"
+                },
+                {
+                  "id": "reject",
+                  "label": "不采纳，我要自己选",
+                  "suggest_id": ""
+                }
+              ]
             }
           ],
           "error_markers": []
@@ -685,6 +709,7 @@
               }
             }
           ],
+          "interactions": [],
           "error_markers": [
             {
               "step_i": 2,
@@ -866,6 +891,7 @@
               }
             }
           ],
+          "interactions": [],
           "error_markers": [
             {
               "step_i": 2,
@@ -1045,6 +1071,49 @@
                 "chosen_agent": "master_agent",
                 "reason": "主控采信了商品页标称值，未采纳风险 Agent 的核实建议。"
               }
+            }
+          ],
+          "interactions": [
+            {
+              "id": "I1",
+              "type": "arbitrate",
+              "at_step": 4,
+              "title": "两个 Agent 的结论冲突：云舟 A16 的内存到底是多少",
+              "prompt": "性能 Agent 采信商品页标称的 16GB；风险 Agent 找到已购评价显示实际只有 8GB。这条决定 A16 是否满足「内存 ≥ 16GB」的硬约束，请你裁决。",
+              "options": [
+                {
+                  "id": "trust_perf",
+                  "label": "采信性能 Agent（按 16GB 算，A16 合格）",
+                  "suggest_id": "YZ-A16",
+                  "agent_id": "performance_agent"
+                },
+                {
+                  "id": "trust_risk",
+                  "label": "采信风险 Agent（实际 8GB，排除 A16）",
+                  "suggest_id": "PS-T15",
+                  "agent_id": "risk_agent"
+                }
+              ]
+            },
+            {
+              "id": "I2",
+              "type": "confirm",
+              "at_step": 5,
+              "title": "确认最终建议",
+              "prompt": "主控准备推荐 云舟 A16（6999 元，RTX 4050，标称 16GB）。是否采纳？",
+              "options": [
+                {
+                  "id": "confirm",
+                  "label": "确认采纳",
+                  "suggest_id": "YZ-A16",
+                  "agent_id": "master_agent"
+                },
+                {
+                  "id": "reject",
+                  "label": "不采纳，我要自己选",
+                  "suggest_id": ""
+                }
+              ]
             }
           ],
           "error_markers": [

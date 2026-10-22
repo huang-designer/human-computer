@@ -60,20 +60,29 @@ CONDITIONS = ("A", "B", "C")
 CONDITION_SPEC: dict[str, dict[str, Any]] = {
     "A": {
         "label": "单 Agent",
+        "short": "单个",
         "description": "一个 Agent 直接完成检索、比较和推荐，用户只看到最终建议。",
         "show": ["answer"],
+        "human_in_loop": False,
     },
     "B": {
-        "label": "隐藏式多 Agent",
-        "description": "多个 Agent 在后台分工协作，用户仍只看到最终建议。",
+        "label": "多个 Agent",
+        "short": "多个",
+        "description": "多个 Agent 在后台分工协作，用户只看到最终建议，不参与过程。",
         "show": ["answer"],
+        "human_in_loop": False,
     },
     "C": {
-        "label": "可见式多 Agent",
-        "description": "显示角色分工、证据来源与意见分歧，允许用户查看并纠正关键节点。",
-        "show": ["answer", "agents", "steps", "disagreements"],
+        "label": "多个 Agent + 人",
+        "short": "多个 + 人",
+        "description": "多个 Agent 协作，并在关键节点把决定权交给人：确认行动、裁决分歧、追加约束；人也可以随时推翻建议。",
+        "show": ["answer", "agents", "interactions", "disagreements", "steps"],
+        "human_in_loop": True,
     },
 }
+
+#: 人机协作点的类型（仅 C 条件出现）
+INTERACTION_TYPES = ("confirm", "arbitrate", "augment")
 
 #: 无解任务的答案标记
 NO_SOLUTION = "NONE"
@@ -117,4 +126,15 @@ def validate(session: dict[str, Any]) -> list[str]:
         for o in d.get("options", []):
             if o.get("agent_id") not in agent_ids:
                 errs.append(f"分歧选项引用了未知 agent_id {o.get('agent_id')!r}")
+    for it in session.get("interactions", []):
+        if it.get("type") not in INTERACTION_TYPES:
+            errs.append(f"interaction {it.get('id')} 的 type 必须是 {INTERACTION_TYPES}")
+        if not it.get("options"):
+            errs.append(f"interaction {it.get('id')} 没有选项")
+        for o in it.get("options", []):
+            aid = o.get("agent_id")
+            if aid and aid not in agent_ids:
+                errs.append(f"interaction {it.get('id')} 引用了未知 agent_id {aid!r}")
+    if session.get("condition") != "C" and session.get("interactions"):
+        errs.append("只有 C 条件（多个 Agent + 人）可以有 interaction")
     return errs

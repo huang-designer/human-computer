@@ -8,7 +8,15 @@
   DEMO-OK   系统推荐 磐石 T15 —— 正确
   DEMO-ERR  系统推荐 云舟 A16 —— 错误（采信商品页标称的 16GB，实际仅 8GB）
 
-B 与 C 的底层数据完全一致，只有 condition 字段不同 —— 这是实验唯一要操纵的自变量。
+三条件：
+  A 单个 Agent          —— 只给建议
+  B 多个 Agent          —— 后台协作，仍只给建议
+  C 多个 Agent + 人      —— 在同一份多 Agent 运行结果之上，插入人机协作点
+                           （确认 / 裁决分歧 / 追加约束），人可改写最终建议
+
+C 的 interactions 由 disagreements 派生：把两个 Agent 的冲突摆给人裁决，
+每个选项携带该 Agent 主张的机型，选择后即改写入 decision 面板的默认值。
+因此 B 与 C 的 Agent 数据仍完全一致，差异只在于「人是否在场」。
 """
 
 from __future__ import annotations
@@ -121,6 +129,51 @@ def disagreements(ok: bool):
     }]
 
 
+def interactions(ok: bool):
+    """C 条件的人机协作点。ok=True 时给一个常规确认点，ok=False 时再加一个分歧裁决点。"""
+    if ok:
+        return [{
+            "id": "I1",
+            "type": "confirm",
+            "at_step": 5,
+            "title": "确认最终建议",
+            "prompt": "主控准备推荐 磐石 T15（实际售价 5999 元，独显，16GB 内存，2.15kg）。是否采纳？",
+            "options": [
+                {"id": "confirm", "label": "确认采纳", "suggest_id": "PS-T15",
+                 "agent_id": "master_agent"},
+                {"id": "reject", "label": "不采纳，我要自己选", "suggest_id": ""},
+            ],
+        }]
+    return [
+        {
+            "id": "I1",
+            "type": "arbitrate",
+            "at_step": 4,
+            "title": "两个 Agent 的结论冲突：云舟 A16 的内存到底是多少",
+            "prompt": "性能 Agent 采信商品页标称的 16GB；风险 Agent 找到已购评价显示实际只有 8GB。"
+                      "这条决定 A16 是否满足「内存 ≥ 16GB」的硬约束，请你裁决。",
+            "options": [
+                {"id": "trust_perf", "label": "采信性能 Agent（按 16GB 算，A16 合格）",
+                 "suggest_id": "YZ-A16", "agent_id": "performance_agent"},
+                {"id": "trust_risk", "label": "采信风险 Agent（实际 8GB，排除 A16）",
+                 "suggest_id": "PS-T15", "agent_id": "risk_agent"},
+            ],
+        },
+        {
+            "id": "I2",
+            "type": "confirm",
+            "at_step": 5,
+            "title": "确认最终建议",
+            "prompt": "主控准备推荐 云舟 A16（6999 元，RTX 4050，标称 16GB）。是否采纳？",
+            "options": [
+                {"id": "confirm", "label": "确认采纳", "suggest_id": "YZ-A16",
+                 "agent_id": "master_agent"},
+                {"id": "reject", "label": "不采纳，我要自己选", "suggest_id": ""},
+            ],
+        },
+    ]
+
+
 ERROR_MARKERS = [
     {"step_i": 2, "agent_id": "performance_agent", "type": "wrong_fact",
      "detail": "采信商品页标称的 16GB 内存，实际为 8GB，导致推荐违反硬约束"},
@@ -161,6 +214,7 @@ def session(task_id: str, cond: str, *, ok: bool) -> dict:
         "agents": agents(ok),
         "steps": steps(ok),
         "disagreements": disagreements(ok),
+        "interactions": interactions(ok) if cond == "C" else [],
         "error_markers": [] if ok else ERROR_MARKERS,
     }
 

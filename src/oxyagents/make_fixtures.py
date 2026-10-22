@@ -1,7 +1,11 @@
 """生成实验用 fixture（Session JSON）——购买决策场景。
 
 一次运行产出三个条件：
-  A 由单 Agent 独立完成；B / C 复用同一次多 Agent 结果（B 与 C 数据必须完全一致）。
+  A 单个 Agent 独立完成；
+  B 多个 Agent 协作，人只接收结果；
+  C 多个 Agent + 人：在同一份多 Agent 结果之上插入人机协作点
+    （确认 / 裁决分歧 / 追加约束），人可改写最终建议。
+  因此 B 与 C 的 Agent 数据完全一致，差异只在于「人是否在场」。
 
 ⚠️ 关于「离线预生成」：这是保证 B 与 C 内容一致的唯一可靠方式（实时跑会有随机性，
 实验中途重跑还会让已收集的数据失效）。输出确实由真实多智能体系统产生，只是提前跑并冻结，
@@ -149,14 +153,32 @@ async def run_multi(mas: Any, task: dict[str, Any]) -> dict[str, Any]:
 
 
 def extract_id(text: str) -> str:
-    """从自由文本里抽机型 ID；抽不到就返回原文（后续会被判为错误，属正常现象）。"""
-    products = json.loads(CATALOG.read_text(encoding="utf-8"))["products"]
+    """从自由文本里抽机型 ID。
+
+    优先取「推荐 / 建议 / 选择」之后出现的第一个 ID（"排除 A，推荐 B" 应返回 B），
+    否则取最后出现的 ID。抽不到就返回原文截断（后续会被判为错误，属正常现象）。
+
+    注意：这是启发式。夹具在展示给被试之前，建议人工过一遍……
+    """
     if "NONE" in text.upper() or "没有机型" in text or "无合适" in text:
         return NO_SOLUTION
+
+    products = json.loads(CATALOG.read_text(encoding="utf-8"))["products"]
+    hits: list[tuple[int, str]] = []
     for p in products:
-        if p["id"] in text:
-            return p["id"]
-    return text[:40]
+        start = 0
+        while (idx := text.find(p["id"], start)) >= 0:
+            hits.append((idx, p["id"]))
+            start = idx + 1
+    if not hits:
+        return text[:40]
+
+    keyword_pos = max((text.rfind(k) for k in ("推荐", "建议", "选择")), default=-1)
+    if keyword_pos >= 0:
+        after = [h for h in hits if h[0] > keyword_pos]
+        if after:
+            return min(after)[1]
+    return max(hits)[1]
 
 
 def detect_disagreements(task: dict[str, Any], claims: dict[str, str], final: str) -> list[dict[str, Any]]:
@@ -184,6 +206,59 @@ def detect_disagreements(task: dict[str, Any], claims: dict[str, str], final: st
     ]
 
 
+def build_interactions(run: dict[str, Any]) -> list[dict[str, Any]]:
+    """从分歧与最终建议派生 C 条件的人机协作点。
+
+    这里的「选项 → 建议机型」映射不需要额外调用模型：每个选项都指向
+    某个 Agent 自己给出的机型 ID，人选择谁就等于采纳谁的结论。
+    """
+    out: list[dict[str, Any]] = []
+    n = 0
+
+    for d in run.get("disagreements", []):
+        opts = []
+        for o in d.get("options", []):
+            pid = extract_id(o.get("claim", ""))
+            opts.append(
+                {
+                    "id": f"trust_{o['agent_id']}",
+                    "label": f"采信 {LABELS.get(o['agent_id'], o['agent_id'])}（{pid or '未给出机型'}）",
+                    "suggest_id": pid if pid and pid != NO_SOLUTION else "",
+                    "agent_id": o["agent_id"],
+                }
+            )
+        if len([o for o in opts if o["suggest_id"]]) < 2:
+            continue
+        n += 1
+        out.append(
+            {
+                "id": f"I{n}",
+                "type": "arbitrate",
+                "at_step": max((s["i"] for s in run["steps"]), default=0),
+                "title": f"专家结论冲突：{d.get('topic', '')}",
+                "prompt": "上述分歧会直接影响最终建议，请你裁决采纳哪一方。",
+                "options": opts,
+            }
+        )
+
+    rec = (run.get("recommendation") or {}).get("id", "")
+    n += 1
+    out.append(
+        {
+            "id": f"I{n}",
+            "type": "confirm",
+            "at_step": max((s["i"] for s in run["steps"]), default=0),
+            "title": "确认最终建议",
+            "prompt": f"主控准备给出建议：{rec}。是否采纳？",
+            "options": [
+                {"id": "confirm", "label": "确认采纳", "suggest_id": rec, "agent_id": MASTER},
+                {"id": "reject", "label": "不采纳，我要自己选", "suggest_id": ""},
+            ],
+        }
+    )
+    return out
+
+
 def build_session(task: dict[str, Any], condition: str, run: dict[str, Any]) -> dict[str, Any]:
     return {
         "session_id": f"{task['task_id']}::{condition}",
@@ -206,6 +281,7 @@ def build_session(task: dict[str, Any], condition: str, run: dict[str, Any]) -> 
         "agents": run["agents"],
         "steps": run["steps"],
         "disagreements": run.get("disagreements", []),
+        "interactions": build_interactions(run) if condition == "C" else [],
         "error_markers": [],  # 由人工在挑错阶段补充
     }
 

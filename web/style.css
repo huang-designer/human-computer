@@ -168,3 +168,25 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .opt select { margin-left: auto; }
 .action-foot { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
 .action-foot input { flex: 1; }
+
+/* ---------- 人机协作点（C 条件） ---------- */
+.interaction-card { border-color: #cfe0ff; background: #fbfdff; }
+.interaction {
+  border: 1px solid #dbe6fb; border-radius: 8px; padding: 12px;
+  background: #fff; margin-bottom: 10px;
+}
+.interaction.done { border-color: #c9e7d3; background: #fbfefc; }
+.it-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.it-type {
+  font-size: 11px; font-weight: 700; color: #fff; background: var(--accent);
+  padding: 1px 8px; border-radius: 999px;
+}
+.interaction.done .it-type { background: var(--ok); }
+.it-title { font-weight: 600; }
+.it-done { font-size: 11px; color: var(--ok); margin-left: auto; }
+.it-prompt { margin: 8px 0 10px; color: #444; font-size: 13px; }
+.who-tag {
+  margin-left: auto; font-size: 11px; color: var(--muted);
+  background: #f2f5fa; border-radius: 999px; padding: 1px 8px;
+}
+.opt.picked { border-color: var(--accent); }
