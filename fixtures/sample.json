@@ -1,0 +1,796 @@
+{
+  "note": "人工构造的演示数据，仅用于跑通界面，不得作为实验数据。真实数据由 src.oxyagents.make_fixtures 生成。",
+  "tasks": {
+    "demo-ok": {
+      "level": "1",
+      "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+      "conditions": {
+        "A": {
+          "session_id": "demo-ok::A",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-ok",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "A",
+          "final_answer": "3",
+          "correct": true,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：答案满足格式要求",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [],
+          "error_markers": []
+        },
+        "B": {
+          "session_id": "demo-ok::B",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-ok",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "B",
+          "final_answer": "3",
+          "correct": true,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：答案满足格式要求",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [
+            {
+              "topic": "最少段数",
+              "options": [
+                {
+                  "agent_id": "search_agent",
+                  "claim": "直觉上 7 天需要 7 段。",
+                  "evidence": ""
+                },
+                {
+                  "agent_id": "code_agent",
+                  "claim": "三段足够，因为可以用找零。",
+                  "evidence": "run_python_code 枚举结果"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "计算 Agent 的结论经穷举验证，检索 Agent 未做计算。"
+              }
+            }
+          ],
+          "error_markers": []
+        },
+        "C": {
+          "session_id": "demo-ok::C",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-ok",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "C",
+          "final_answer": "3",
+          "correct": true,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：答案满足格式要求",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [
+            {
+              "topic": "最少段数",
+              "options": [
+                {
+                  "agent_id": "search_agent",
+                  "claim": "直觉上 7 天需要 7 段。",
+                  "evidence": ""
+                },
+                {
+                  "agent_id": "code_agent",
+                  "claim": "三段足够，因为可以用找零。",
+                  "evidence": "run_python_code 枚举结果"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "计算 Agent 的结论经穷举验证，检索 Agent 未做计算。"
+              }
+            }
+          ],
+          "error_markers": []
+        }
+      }
+    },
+    "demo-err": {
+      "level": "1",
+      "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+      "conditions": {
+        "A": {
+          "session_id": "demo-err::A",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-err",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "A",
+          "final_answer": "7",
+          "correct": false,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：答案满足格式要求",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [],
+          "error_markers": [
+            {
+              "step_i": 2,
+              "agent_id": "code_agent",
+              "type": "wrong_calc",
+              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+            }
+          ]
+        },
+        "B": {
+          "session_id": "demo-err::B",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-err",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "B",
+          "final_answer": "7",
+          "correct": false,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：格式合规",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [
+            {
+              "topic": "最少段数",
+              "options": [
+                {
+                  "agent_id": "code_agent",
+                  "claim": "7 段，每天一段最稳妥。",
+                  "evidence": "未使用找零，直接按天数切分"
+                },
+                {
+                  "agent_id": "verify_agent",
+                  "claim": "应为 3 段：1/7、2/7、4/7，可用找零覆盖 1–7 天。",
+                  "evidence": "支付序列可构造，符合题目的『最少』要求"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "主控优先采纳了计算 Agent，未处理校验者的反对意见。"
+              }
+            }
+          ],
+          "error_markers": [
+            {
+              "step_i": 2,
+              "agent_id": "code_agent",
+              "type": "wrong_calc",
+              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+            }
+          ]
+        },
+        "C": {
+          "session_id": "demo-err::C",
+          "trace_id": "",
+          "task": {
+            "task_id": "demo-err",
+            "level": "1",
+            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+            "answer": "3",
+            "steps": "切成 1/7、2/7、4/7 三段"
+          },
+          "condition": "C",
+          "final_answer": "7",
+          "correct": false,
+          "agents": [
+            {
+              "id": "search_agent",
+              "name": "检索 Agent",
+              "role": "定位问题类型与可用资料",
+              "status": "ok",
+              "elapsed_ms": 2100,
+              "summary": "这是自包含的逻辑题，无需外部检索。"
+            },
+            {
+              "id": "code_agent",
+              "name": "计算 Agent",
+              "role": "枚举切割方案并验证支付序列",
+              "status": "ok",
+              "elapsed_ms": 4300,
+              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+            },
+            {
+              "id": "verify_agent",
+              "name": "校验 Agent",
+              "role": "检查约束与格式",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "答案满足『仅输出数字』的格式要求。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总并输出最终答案",
+              "status": "ok",
+              "elapsed_ms": 1800,
+              "summary": "输出 3。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "search_agent",
+              "kind": "plan",
+              "title": "判断题型：自包含逻辑题",
+              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.9,
+              "elapsed_ms": 2100
+            },
+            {
+              "i": 2,
+              "agent_id": "code_agent",
+              "kind": "tool",
+              "title": "调用工具 `run_python_code`",
+              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
+              "tool": "run_python_code",
+              "evidence": [
+                {
+                  "label": "工具返回",
+                  "source": "run_python_code",
+                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 4300
+            },
+            {
+              "i": 3,
+              "agent_id": "code_agent",
+              "kind": "think",
+              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
+              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.95,
+              "elapsed_ms": null
+            },
+            {
+              "i": 4,
+              "agent_id": "verify_agent",
+              "kind": "think",
+              "title": "校验 Agent：格式合规",
+              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.8,
+              "elapsed_ms": 2600
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并输出答案",
+              "detail": "3",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 1800
+            }
+          ],
+          "disagreements": [
+            {
+              "topic": "最少段数",
+              "options": [
+                {
+                  "agent_id": "code_agent",
+                  "claim": "7 段，每天一段最稳妥。",
+                  "evidence": "未使用找零，直接按天数切分"
+                },
+                {
+                  "agent_id": "verify_agent",
+                  "claim": "应为 3 段：1/7、2/7、4/7，可用找零覆盖 1–7 天。",
+                  "evidence": "支付序列可构造，符合题目的『最少』要求"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "主控优先采纳了计算 Agent，未处理校验者的反对意见。"
+              }
+            }
+          ],
+          "error_markers": [
+            {
+              "step_i": 2,
+              "agent_id": "code_agent",
+              "type": "wrong_calc",
+              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

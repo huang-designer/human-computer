@@ -1,0 +1,111 @@
+{
+  "version": "0.2",
+  "note": "实验任务集选型：15 条，全部无附件依赖，覆盖 level 1/2/3。category 与 expected_error 为本项目的人工标注，用于实验分组与错误案例设计。",
+  "tasks": [
+    {
+      "task_id": "4cc2e0f7-f998-4617-b77d-ab6b762e8724",
+      "category": "self_contained",
+      "media": "none",
+      "stability": "high",
+      "expected_error": "把 7 天误算成 7 段；忽略『回收』机制"
+    },
+    {
+      "task_id": "8789238a-0102-4c6e-8833-d25f26d5b44f",
+      "category": "live_web",
+      "media": "web",
+      "stability": "low",
+      "expected_error": "页面改版导致板块顺序或命名变化；长答案几乎不可能完全匹配"
+    },
+    {
+      "task_id": "0a5d59c4-7dee-4eef-9f95-918b34f8f3b2",
+      "category": "live_web",
+      "media": "web",
+      "stability": "medium",
+      "expected_error": "只查到 Taro 却漏掉『凹凸实验室』这一组织层级"
+    },
+    {
+      "task_id": "93c98572-e5d9-451c-9208-4e09497fa16f",
+      "category": "live_web",
+      "media": "web",
+      "stability": "medium",
+      "expected_error": "混淆『问大家』多个提问；把回答数当成答案"
+    },
+    {
+      "task_id": "85eaaa6d-2048-4867-a1e1-1d5dfe1cfa0a",
+      "category": "self_contained",
+      "media": "none",
+      "stability": "high",
+      "expected_error": "实体消歧选错具体义项（如把苹果选成水果）"
+    },
+    {
+      "task_id": "6efa645e-6e25-4998-a4f5-82cf0ca62fe2",
+      "category": "self_contained",
+      "media": "none",
+      "stability": "high",
+      "expected_error": "把 F 序（列优先）当成 C 序；np.matrix 输出格式不规范"
+    },
+    {
+      "task_id": "8ef8104b-6fea-4d68-bf25-9544f256df23",
+      "category": "self_contained",
+      "media": "none",
+      "stability": "high",
+      "expected_error": "忽略『48 小时两轮』的约束，按单轮算出 7"
+    },
+    {
+      "task_id": "b7497dab-c881-4fe0-82fa-2bfc9db29131",
+      "category": "live_web",
+      "media": "web",
+      "stability": "low",
+      "expected_error": "定位到错误 issue；抓到 issue 正文里的其他链接"
+    },
+    {
+      "task_id": "e190a526-8286-437c-a1f4-41095e0d5b9e",
+      "category": "media",
+      "media": "video",
+      "stability": "medium",
+      "expected_error": "把藏纸其他品类（如澄心堂纸）当答案"
+    },
+    {
+      "task_id": "d9330a95-6f70-46c5-b1a6-9ffcb64fb6e3",
+      "category": "live_web",
+      "media": "web",
+      "stability": "medium",
+      "expected_error": "答成第二个包发布时间或首个包发布时间；日期格式不符"
+    },
+    {
+      "task_id": "f358b311-ca7b-4c7b-a1be-5dce2f488b4a",
+      "category": "live_web",
+      "media": "web",
+      "stability": "low",
+      "expected_error": "把 open issue 计入 closed；版本 tag 找错"
+    },
+    {
+      "task_id": "a79fe89d-762e-4360-86d2-6d61ed7670af",
+      "category": "media",
+      "media": "video",
+      "stability": "low",
+      "expected_error": "数错星星；时间点定位偏移"
+    },
+    {
+      "task_id": "1fd59113-67be-4a5e-a898-18b6d88ae598",
+      "category": "media",
+      "media": "video",
+      "stability": "medium",
+      "expected_error": "答成同期介绍的其他食材"
+    },
+    {
+      "task_id": "adf06793-fcb4-49e4-a16d-a4324c767373",
+      "category": "media",
+      "media": "image",
+      "stability": "medium",
+      "expected_error": "单位换算错误（cm → m）；读图数值有偏差"
+    },
+    {
+      "task_id": "9a820b5e-67ad-47b8-9c2a-1867ee49d64a",
+      "category": "media",
+      "media": "video",
+      "stability": "low",
+      "expected_error": "把非首句演唱者当成首发；年份与发行年混淆"
+    }
+  ]
+}

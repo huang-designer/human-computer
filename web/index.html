@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>多智能体协作可见性实验</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>多智能体协作可见性实验</strong>
+      <span class="sub">一个 AI 还是一个 AI 团队？</span>
+    </div>
+    <div class="controls">
+      <label>被试 <input id="pid" size="6" placeholder="P01" /></label>
+      <label>任务 <select id="taskSel"></select></label>
+      <div class="tabs" id="condTabs"></div>
+      <span class="timer" id="timer">00:00</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card task-card">
+      <div class="task-head">
+        <span class="pill" id="levelPill">L?</span>
+        <span class="pill ghost" id="condPill">—</span>
+        <span class="muted" id="taskMeta"></span>
+      </div>
+      <p class="query" id="query">选择任务开始</p>
+    </section>
+
+    <section id="content" class="content"><p class="muted center">选择任务与条件后开始。</p></section>
+
+    <section class="card action-card" id="actionCard" hidden>
+      <div class="action-row">
+        <textarea id="answerBox" rows="2" placeholder="你的最终答案"></textarea>
+        <div class="btns">
+          <button id="acceptBtn" class="primary">采纳系统答案</button>
+          <button id="submitBtn">提交我的答案</button>
+        </div>
+      </div>
+      <p class="hint" id="actionHint"></p>
+    </section>
+
+    <section class="card survey-card" id="surveyCard" hidden>
+      <h3>任务后问卷 <span class="muted">（1 = 完全不同意，7 = 完全同意）</span></h3>
+      <div class="survey-grid" id="surveyGrid"></div>
+      <button id="nextBtn" class="primary">保存并进入下一任务</button>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>所有操作均被记录（不含个人身份信息）</span>
+    <span id="logCount">0 events</span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
