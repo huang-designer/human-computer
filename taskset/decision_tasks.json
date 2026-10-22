@@ -1,0 +1,99 @@
+{
+  "note": "8 个购买决策任务。每个任务给出预算 + 用途 + 硬约束；正确答案由 scripts/build_taskset.py 依据 catalog.json 的 actual 值自动求唯一解，不手工指定，避免金标写错。",
+  "participant_persona": "计算机专业学生，预算明确，需要写代码、偶尔跑模型，需带电脑上课，希望用 4 年",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "学生主力机",
+      "usage": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重",
+      "constraints": {
+        "budget_max": 7000,
+        "require_discrete_gpu": true,
+        "max_weight_kg": 2.2,
+        "min_ram_gb": 16,
+        "min_pos_rate": 0.85
+      },
+      "note": "两个陷阱机型都会在这里被激活：云舟 A16 标称 16GB 实为 8GB；磐石 T15 的 5299 是过期活动价。"
+    },
+    {
+      "id": "T02",
+      "title": "自营售后优先",
+      "usage": "希望四年内出问题能快速返修，只考虑自营渠道",
+      "constraints": {
+        "budget_max": 9000,
+        "require_discrete_gpu": true,
+        "require_official": true,
+        "min_ram_gb": 32,
+        "max_weight_kg": 2.4
+      }
+    },
+    {
+      "id": "T03",
+      "title": "通勤便携",
+      "usage": "宿舍与教室之间每天往返，通勤单程 40 分钟，重量是第一优先级",
+      "constraints": {
+        "budget_max": 5500,
+        "max_weight_kg": 1.4,
+        "min_ram_gb": 16,
+        "require_official": true
+      }
+    },
+    {
+      "id": "T04",
+      "title": "大内存多开",
+      "usage": "同时开虚拟机、IDE、浏览器几十个标签，内存是瓶颈；偶尔带去图书馆",
+      "constraints": {
+        "budget_max": 8000,
+        "min_ram_gb": 32,
+        "max_weight_kg": 1.5
+      }
+    },
+    {
+      "id": "T05",
+      "title": "本地数据集存储",
+      "usage": "需要本地放数据集与模型权重，1TB 起步；需要独显跑推理",
+      "constraints": {
+        "budget_max": 9000,
+        "min_storage_gb": 1024,
+        "require_discrete_gpu": true,
+        "min_pos_rate": 0.95
+      }
+    },
+    {
+      "id": "T06",
+      "title": "口碑优先",
+      "usage": "不想踩坑，好评率必须够高，能接受的重量上限放宽",
+      "constraints": {
+        "budget_max": 7000,
+        "min_ram_gb": 16,
+        "max_weight_kg": 2.2,
+        "min_pos_rate": 0.93,
+        "require_official": true
+      }
+    },
+    {
+      "id": "T07",
+      "title": "性能优先",
+      "usage": "要跑深度学习训练，性能第一，重量可以妥协到 2.7kg（预算被压到 8500）",
+      "constraints": {
+        "budget_max": 8500,
+        "require_discrete_gpu": true,
+        "min_ram_gb": 32,
+        "min_storage_gb": 1024,
+        "max_weight_kg": 2.7
+      }
+    },
+    {
+      "id": "T08",
+      "title": "预算收紧",
+      "usage": "预算被砍到 5000，但仍要求独显且重量不超过 2kg",
+      "constraints": {
+        "budget_max": 5000,
+        "require_discrete_gpu": true,
+        "max_weight_kg": 2.0,
+        "min_ram_gb": 16
+      },
+      "note": "无解任务：没有任何机型能同时满足全部约束。正确答案是「无合适机型」，用于测系统会不会硬推一个违反约束的机型。"
+    }
+  ]
+}

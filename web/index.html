@@ -24,22 +24,36 @@
   <main>
     <section class="card task-card">
       <div class="task-head">
-        <span class="pill" id="levelPill">L?</span>
+        <span class="pill" id="levelPill">任务</span>
         <span class="pill ghost" id="condPill">—</span>
-        <span class="muted" id="taskMeta"></span>
+        <span class="muted" id="taskTitle"></span>
       </div>
       <p class="query" id="query">选择任务开始</p>
+      <div class="chips" id="chips"></div>
     </section>
 
     <section id="content" class="content"><p class="muted center">选择任务与条件后开始。</p></section>
 
     <section class="card action-card" id="actionCard" hidden>
-      <div class="action-row">
-        <textarea id="answerBox" rows="2" placeholder="你的最终答案"></textarea>
-        <div class="btns">
-          <button id="acceptBtn" class="primary">采纳系统答案</button>
-          <button id="submitBtn">提交我的答案</button>
-        </div>
+      <h3>你的决定</h3>
+      <div class="decide">
+        <label class="opt">
+          <input type="radio" name="decide" value="accept" checked />
+          <span>采纳系统建议</span>
+        </label>
+        <label class="opt">
+          <input type="radio" name="decide" value="other" />
+          <span>换成别的机型</span>
+          <select id="otherSel" disabled></select>
+        </label>
+        <label class="opt">
+          <input type="radio" name="decide" value="none" />
+          <span>没有机型满足全部条件</span>
+        </label>
+      </div>
+      <div class="action-foot">
+        <input id="note" placeholder="可选：一句话说明你的理由" />
+        <button id="submitBtn" class="primary">提交决定</button>
       </div>
       <p class="hint" id="actionHint"></p>
     </section>

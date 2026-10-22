@@ -1,384 +1,511 @@
 {
-  "note": "人工构造的演示数据，仅用于跑通界面，不得作为实验数据。真实数据由 src.oxyagents.make_fixtures 生成。",
+  "note": "人工构造的演示数据，仅用于跑通界面，不得作为实验数据。约束取自真实任务集 T01；真实 fixture 由 src.oxyagents.make_fixtures 生成。",
   "tasks": {
-    "demo-ok": {
-      "level": "1",
-      "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+    "DEMO-OK": {
+      "level": "decision",
+      "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+      "constraints": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+      "origin_task": "T01",
       "conditions": {
         "A": {
-          "session_id": "demo-ok::A",
+          "session_id": "DEMO-OK::A",
           "trace_id": "",
           "task": {
-            "task_id": "demo-ok",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+            "task_id": "DEMO-OK",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
           },
           "condition": "A",
-          "final_answer": "3",
-          "correct": true,
-          "agents": [
-            {
-              "id": "search_agent",
-              "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
-              "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
-            },
-            {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
-              "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
-            },
-            {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
-              "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
-            },
-            {
-              "id": "master_agent",
-              "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
-              "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
-            }
-          ],
-          "steps": [
-            {
-              "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
-              "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
-              "evidence": [
-                {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
-                }
-              ],
-              "confidence": null,
-              "elapsed_ms": 4300
-            },
-            {
-              "i": 3,
-              "agent_id": "code_agent",
-              "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
-            },
-            {
-              "i": 4,
-              "agent_id": "verify_agent",
-              "kind": "think",
-              "title": "校验 Agent：答案满足格式要求",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
-            },
-            {
-              "i": 5,
-              "agent_id": "master_agent",
-              "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
-              "tool": null,
-              "evidence": [],
-              "confidence": null,
-              "elapsed_ms": 1800
-            }
-          ],
-          "disagreements": [],
-          "error_markers": []
-        },
-        "B": {
-          "session_id": "demo-ok::B",
-          "trace_id": "",
-          "task": {
-            "task_id": "demo-ok",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+          "final_answer": "PS-T15",
+          "recommendation": {
+            "id": "PS-T15",
+            "name": "磐石 T15",
+            "price": 5999,
+            "reason": "实际售价 5999 元，在预算内；RTX 3050 独显满足需求；16GB 内存 / 512GB 存储达标。"
           },
-          "condition": "B",
-          "final_answer": "3",
           "correct": true,
           "agents": [
             {
-              "id": "search_agent",
+              "id": "retrieval_agent",
               "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
+              "role": "抓取候选机型的价格、参数与评价",
               "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
+              "elapsed_ms": 8400,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
             },
             {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
               "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+              "elapsed_ms": 5200,
+              "summary": "磐石 T15（RTX 3050）满足独显要求，可跑小模型训练。"
             },
             {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
               "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
+              "elapsed_ms": 4100,
+              "summary": "磐石 T15 实际售价 5999 元，在预算内；页面 5299 为过期活动价。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 3900,
+              "summary": "磐石 T15 售后为第三方、屏幕色域偏低；云舟 A16 内存实为 8GB。"
             },
             {
               "id": "master_agent",
               "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
+              "role": "汇总各方结论并输出建议",
               "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
+              "elapsed_ms": 2600,
+              "summary": "推荐 磐石 T15。"
             }
           ],
           "steps": [
             {
               "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
+              "agent_id": "retrieval_agent",
               "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
               "evidence": [
                 {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
                 }
               ],
               "confidence": null,
-              "elapsed_ms": 4300
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
             },
             {
               "i": 3,
-              "agent_id": "code_agent",
+              "agent_id": "cost_agent",
               "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
             },
             {
               "i": 4,
-              "agent_id": "verify_agent",
+              "agent_id": "risk_agent",
               "kind": "think",
-              "title": "校验 Agent：答案满足格式要求",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
             },
             {
               "i": 5,
               "agent_id": "master_agent",
               "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 磐石 T15（PS-T15）。实际售价 5999 元，在预算内；独显满足需求；16GB 内存与 512GB 存储达标。需注意售后为第三方、屏幕色域偏低。",
               "tool": null,
               "evidence": [],
               "confidence": null,
-              "elapsed_ms": 1800
+              "elapsed_ms": 2600
             }
           ],
           "disagreements": [
             {
-              "topic": "最少段数",
+              "topic": "性能与预算的取舍",
               "options": [
                 {
-                  "agent_id": "search_agent",
-                  "claim": "直觉上 7 天需要 7 段。",
-                  "evidence": ""
+                  "agent_id": "performance_agent",
+                  "claim": "云舟 A16 显卡更强（RTX 4050），更适合跑模型。",
+                  "evidence": "显卡参数对比"
                 },
                 {
-                  "agent_id": "code_agent",
-                  "claim": "三段足够，因为可以用找零。",
-                  "evidence": "run_python_code 枚举结果"
+                  "agent_id": "cost_agent",
+                  "claim": "磐石 T15 便宜 1000 元且满足独显要求，性价比更高。",
+                  "evidence": "实际售价 5999 元"
                 }
               ],
               "resolution": {
                 "chosen_agent": "master_agent",
-                "reason": "计算 Agent 的结论经穷举验证，检索 Agent 未做计算。"
+                "reason": "预算必须满足，且云舟 A16 内存实际不足 16GB，故采纳成本 Agent 的方向并改为推荐磐石 T15。"
+              }
+            }
+          ],
+          "error_markers": []
+        },
+        "B": {
+          "session_id": "DEMO-OK::B",
+          "trace_id": "",
+          "task": {
+            "task_id": "DEMO-OK",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
+          },
+          "condition": "B",
+          "final_answer": "PS-T15",
+          "recommendation": {
+            "id": "PS-T15",
+            "name": "磐石 T15",
+            "price": 5999,
+            "reason": "实际售价 5999 元，在预算内；RTX 3050 独显满足需求；16GB 内存 / 512GB 存储达标。"
+          },
+          "correct": true,
+          "agents": [
+            {
+              "id": "retrieval_agent",
+              "name": "检索 Agent",
+              "role": "抓取候选机型的价格、参数与评价",
+              "status": "ok",
+              "elapsed_ms": 8400,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
+            },
+            {
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
+              "status": "ok",
+              "elapsed_ms": 5200,
+              "summary": "磐石 T15（RTX 3050）满足独显要求，可跑小模型训练。"
+            },
+            {
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
+              "status": "ok",
+              "elapsed_ms": 4100,
+              "summary": "磐石 T15 实际售价 5999 元，在预算内；页面 5299 为过期活动价。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 3900,
+              "summary": "磐石 T15 售后为第三方、屏幕色域偏低；云舟 A16 内存实为 8GB。"
+            },
+            {
+              "id": "master_agent",
+              "name": "主控 Agent",
+              "role": "汇总各方结论并输出建议",
+              "status": "ok",
+              "elapsed_ms": 2600,
+              "summary": "推荐 磐石 T15。"
+            }
+          ],
+          "steps": [
+            {
+              "i": 1,
+              "agent_id": "retrieval_agent",
+              "kind": "tool",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
+              "evidence": [
+                {
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
+                }
+              ],
+              "confidence": null,
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
+            },
+            {
+              "i": 3,
+              "agent_id": "cost_agent",
+              "kind": "think",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
+              "tool": null,
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
+            },
+            {
+              "i": 4,
+              "agent_id": "risk_agent",
+              "kind": "think",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
+              "tool": null,
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
+            },
+            {
+              "i": 5,
+              "agent_id": "master_agent",
+              "kind": "answer",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 磐石 T15（PS-T15）。实际售价 5999 元，在预算内；独显满足需求；16GB 内存与 512GB 存储达标。需注意售后为第三方、屏幕色域偏低。",
+              "tool": null,
+              "evidence": [],
+              "confidence": null,
+              "elapsed_ms": 2600
+            }
+          ],
+          "disagreements": [
+            {
+              "topic": "性能与预算的取舍",
+              "options": [
+                {
+                  "agent_id": "performance_agent",
+                  "claim": "云舟 A16 显卡更强（RTX 4050），更适合跑模型。",
+                  "evidence": "显卡参数对比"
+                },
+                {
+                  "agent_id": "cost_agent",
+                  "claim": "磐石 T15 便宜 1000 元且满足独显要求，性价比更高。",
+                  "evidence": "实际售价 5999 元"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "预算必须满足，且云舟 A16 内存实际不足 16GB，故采纳成本 Agent 的方向并改为推荐磐石 T15。"
               }
             }
           ],
           "error_markers": []
         },
         "C": {
-          "session_id": "demo-ok::C",
+          "session_id": "DEMO-OK::C",
           "trace_id": "",
           "task": {
-            "task_id": "demo-ok",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+            "task_id": "DEMO-OK",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
           },
           "condition": "C",
-          "final_answer": "3",
+          "final_answer": "PS-T15",
+          "recommendation": {
+            "id": "PS-T15",
+            "name": "磐石 T15",
+            "price": 5999,
+            "reason": "实际售价 5999 元，在预算内；RTX 3050 独显满足需求；16GB 内存 / 512GB 存储达标。"
+          },
           "correct": true,
           "agents": [
             {
-              "id": "search_agent",
+              "id": "retrieval_agent",
               "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
+              "role": "抓取候选机型的价格、参数与评价",
               "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
+              "elapsed_ms": 8400,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
             },
             {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
               "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+              "elapsed_ms": 5200,
+              "summary": "磐石 T15（RTX 3050）满足独显要求，可跑小模型训练。"
             },
             {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
               "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
+              "elapsed_ms": 4100,
+              "summary": "磐石 T15 实际售价 5999 元，在预算内；页面 5299 为过期活动价。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 3900,
+              "summary": "磐石 T15 售后为第三方、屏幕色域偏低；云舟 A16 内存实为 8GB。"
             },
             {
               "id": "master_agent",
               "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
+              "role": "汇总各方结论并输出建议",
               "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
+              "elapsed_ms": 2600,
+              "summary": "推荐 磐石 T15。"
             }
           ],
           "steps": [
             {
               "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
+              "agent_id": "retrieval_agent",
               "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
               "evidence": [
                 {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
                 }
               ],
               "confidence": null,
-              "elapsed_ms": 4300
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
             },
             {
               "i": 3,
-              "agent_id": "code_agent",
+              "agent_id": "cost_agent",
               "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
             },
             {
               "i": 4,
-              "agent_id": "verify_agent",
+              "agent_id": "risk_agent",
               "kind": "think",
-              "title": "校验 Agent：答案满足格式要求",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
             },
             {
               "i": 5,
               "agent_id": "master_agent",
               "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 磐石 T15（PS-T15）。实际售价 5999 元，在预算内；独显满足需求；16GB 内存与 512GB 存储达标。需注意售后为第三方、屏幕色域偏低。",
               "tool": null,
               "evidence": [],
               "confidence": null,
-              "elapsed_ms": 1800
+              "elapsed_ms": 2600
             }
           ],
           "disagreements": [
             {
-              "topic": "最少段数",
+              "topic": "性能与预算的取舍",
               "options": [
                 {
-                  "agent_id": "search_agent",
-                  "claim": "直觉上 7 天需要 7 段。",
-                  "evidence": ""
+                  "agent_id": "performance_agent",
+                  "claim": "云舟 A16 显卡更强（RTX 4050），更适合跑模型。",
+                  "evidence": "显卡参数对比"
                 },
                 {
-                  "agent_id": "code_agent",
-                  "claim": "三段足够，因为可以用找零。",
-                  "evidence": "run_python_code 枚举结果"
+                  "agent_id": "cost_agent",
+                  "claim": "磐石 T15 便宜 1000 元且满足独显要求，性价比更高。",
+                  "evidence": "实际售价 5999 元"
                 }
               ],
               "resolution": {
                 "chosen_agent": "master_agent",
-                "reason": "计算 Agent 的结论经穷举验证，检索 Agent 未做计算。"
+                "reason": "预算必须满足，且云舟 A16 内存实际不足 16GB，故采纳成本 Agent 的方向并改为推荐磐石 T15。"
               }
             }
           ],
@@ -386,407 +513,552 @@
         }
       }
     },
-    "demo-err": {
-      "level": "1",
-      "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
+    "DEMO-ERR": {
+      "level": "decision",
+      "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+      "constraints": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+      "origin_task": "T01",
       "conditions": {
         "A": {
-          "session_id": "demo-err::A",
+          "session_id": "DEMO-ERR::A",
           "trace_id": "",
           "task": {
-            "task_id": "demo-err",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+            "task_id": "DEMO-ERR",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
           },
           "condition": "A",
-          "final_answer": "7",
+          "final_answer": "YZ-A16",
+          "recommendation": {
+            "id": "YZ-A16",
+            "name": "云舟 A16",
+            "price": 6999,
+            "reason": "6999 元，RTX 4050 独显，16GB 内存，2.15kg。"
+          },
           "correct": false,
           "agents": [
             {
-              "id": "search_agent",
+              "id": "retrieval_agent",
               "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
+              "role": "抓取候选机型的价格、参数与评价",
               "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
+              "elapsed_ms": 8100,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
             },
             {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
               "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+              "elapsed_ms": 5000,
+              "summary": "云舟 A16：RTX 4050 + 16GB 内存，6999 元，三项都满足。"
             },
             {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
               "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
+              "elapsed_ms": 3600,
+              "summary": "云舟 A16 售价 6999 元，逼近但未超预算。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 4200,
+              "summary": "云舟 A16 有差评提到内存与参数页不符，建议核实。"
             },
             {
               "id": "master_agent",
               "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
+              "role": "汇总各方结论并输出建议",
               "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
+              "elapsed_ms": 2300,
+              "summary": "推荐 云舟 A16。"
             }
           ],
           "steps": [
             {
               "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
+              "agent_id": "retrieval_agent",
               "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
               "evidence": [
                 {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
                 }
               ],
               "confidence": null,
-              "elapsed_ms": 4300
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
             },
             {
               "i": 3,
-              "agent_id": "code_agent",
+              "agent_id": "cost_agent",
               "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
             },
             {
               "i": 4,
-              "agent_id": "verify_agent",
+              "agent_id": "risk_agent",
               "kind": "think",
-              "title": "校验 Agent：答案满足格式要求",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
             },
             {
               "i": 5,
               "agent_id": "master_agent",
               "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 云舟 A16（YZ-A16）。6999 元，RTX 4050 独显，16GB 内存，2.15kg。",
               "tool": null,
               "evidence": [],
               "confidence": null,
-              "elapsed_ms": 1800
+              "elapsed_ms": 2300
             }
           ],
-          "disagreements": [],
+          "disagreements": [
+            {
+              "topic": "云舟 A16 的内存到底是多少",
+              "options": [
+                {
+                  "agent_id": "performance_agent",
+                  "claim": "商品页标称 16GB，满足约束，推荐云舟 A16。",
+                  "evidence": "商品页参数表"
+                },
+                {
+                  "agent_id": "risk_agent",
+                  "claim": "已购评价显示实际 8GB，不满足 16GB 硬约束，应排除。",
+                  "evidence": "商品评价区"
+                }
+              ],
+              "resolution": {
+                "chosen_agent": "master_agent",
+                "reason": "主控采信了商品页标称值，未采纳风险 Agent 的核实建议。"
+              }
+            }
+          ],
           "error_markers": [
             {
               "step_i": 2,
-              "agent_id": "code_agent",
-              "type": "wrong_calc",
-              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+              "agent_id": "performance_agent",
+              "type": "wrong_fact",
+              "detail": "采信商品页标称的 16GB 内存，实际为 8GB，导致推荐违反硬约束"
+            },
+            {
+              "step_i": 5,
+              "agent_id": "master_agent",
+              "type": "wrong_fact",
+              "detail": "最终建议基于错误的内存参数"
             }
           ]
         },
         "B": {
-          "session_id": "demo-err::B",
+          "session_id": "DEMO-ERR::B",
           "trace_id": "",
           "task": {
-            "task_id": "demo-err",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+            "task_id": "DEMO-ERR",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
           },
           "condition": "B",
-          "final_answer": "7",
+          "final_answer": "YZ-A16",
+          "recommendation": {
+            "id": "YZ-A16",
+            "name": "云舟 A16",
+            "price": 6999,
+            "reason": "6999 元，RTX 4050 独显，16GB 内存，2.15kg。"
+          },
           "correct": false,
           "agents": [
             {
-              "id": "search_agent",
+              "id": "retrieval_agent",
               "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
+              "role": "抓取候选机型的价格、参数与评价",
               "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
+              "elapsed_ms": 8100,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
             },
             {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
               "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+              "elapsed_ms": 5000,
+              "summary": "云舟 A16：RTX 4050 + 16GB 内存，6999 元，三项都满足。"
             },
             {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
               "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
+              "elapsed_ms": 3600,
+              "summary": "云舟 A16 售价 6999 元，逼近但未超预算。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 4200,
+              "summary": "云舟 A16 有差评提到内存与参数页不符，建议核实。"
             },
             {
               "id": "master_agent",
               "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
+              "role": "汇总各方结论并输出建议",
               "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
+              "elapsed_ms": 2300,
+              "summary": "推荐 云舟 A16。"
             }
           ],
           "steps": [
             {
               "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
+              "agent_id": "retrieval_agent",
               "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
               "evidence": [
                 {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
                 }
               ],
               "confidence": null,
-              "elapsed_ms": 4300
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
             },
             {
               "i": 3,
-              "agent_id": "code_agent",
+              "agent_id": "cost_agent",
               "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
             },
             {
               "i": 4,
-              "agent_id": "verify_agent",
+              "agent_id": "risk_agent",
               "kind": "think",
-              "title": "校验 Agent：格式合规",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
             },
             {
               "i": 5,
               "agent_id": "master_agent",
               "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 云舟 A16（YZ-A16）。6999 元，RTX 4050 独显，16GB 内存，2.15kg。",
               "tool": null,
               "evidence": [],
               "confidence": null,
-              "elapsed_ms": 1800
+              "elapsed_ms": 2300
             }
           ],
           "disagreements": [
             {
-              "topic": "最少段数",
+              "topic": "云舟 A16 的内存到底是多少",
               "options": [
                 {
-                  "agent_id": "code_agent",
-                  "claim": "7 段，每天一段最稳妥。",
-                  "evidence": "未使用找零，直接按天数切分"
+                  "agent_id": "performance_agent",
+                  "claim": "商品页标称 16GB，满足约束，推荐云舟 A16。",
+                  "evidence": "商品页参数表"
                 },
                 {
-                  "agent_id": "verify_agent",
-                  "claim": "应为 3 段：1/7、2/7、4/7，可用找零覆盖 1–7 天。",
-                  "evidence": "支付序列可构造，符合题目的『最少』要求"
+                  "agent_id": "risk_agent",
+                  "claim": "已购评价显示实际 8GB，不满足 16GB 硬约束，应排除。",
+                  "evidence": "商品评价区"
                 }
               ],
               "resolution": {
                 "chosen_agent": "master_agent",
-                "reason": "主控优先采纳了计算 Agent，未处理校验者的反对意见。"
+                "reason": "主控采信了商品页标称值，未采纳风险 Agent 的核实建议。"
               }
             }
           ],
           "error_markers": [
             {
               "step_i": 2,
-              "agent_id": "code_agent",
-              "type": "wrong_calc",
-              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+              "agent_id": "performance_agent",
+              "type": "wrong_fact",
+              "detail": "采信商品页标称的 16GB 内存，实际为 8GB，导致推荐违反硬约束"
+            },
+            {
+              "step_i": 5,
+              "agent_id": "master_agent",
+              "type": "wrong_fact",
+              "detail": "最终建议基于错误的内存参数"
             }
           ]
         },
         "C": {
-          "session_id": "demo-err::C",
+          "session_id": "DEMO-ERR::C",
           "trace_id": "",
           "task": {
-            "task_id": "demo-err",
-            "level": "1",
-            "query": "你雇人工作7天，手上仅有一根金条并且需每日支付1/7根金条作为报酬。问最少将金条切成多少段，使得每天能支付当日工资？仅输出数字",
-            "answer": "3",
-            "steps": "切成 1/7、2/7、4/7 三段"
+            "task_id": "DEMO-ERR",
+            "level": "decision",
+            "query": "写代码 + 偶尔训练小模型，需要独显；每天背着上课，不能太重。\n\n预算上限 7000 元。",
+            "constraints": {
+              "budget_max": 7000,
+              "require_discrete_gpu": true,
+              "max_weight_kg": 2.2,
+              "min_ram_gb": 16,
+              "min_pos_rate": 0.85
+            },
+            "constraint_text": "预算 ≤ 7000 元 · 必须独立显卡 · 内存 ≥ 16GB · 重量 ≤ 2.2kg · 好评率 ≥ 85%",
+            "answer": "PS-T15",
+            "answer_label": "磐石 T15",
+            "steps": "云舟 A16 因实际内存 8GB 被排除；磐石 T15 满足全部约束"
           },
           "condition": "C",
-          "final_answer": "7",
+          "final_answer": "YZ-A16",
+          "recommendation": {
+            "id": "YZ-A16",
+            "name": "云舟 A16",
+            "price": 6999,
+            "reason": "6999 元，RTX 4050 独显，16GB 内存，2.15kg。"
+          },
           "correct": false,
           "agents": [
             {
-              "id": "search_agent",
+              "id": "retrieval_agent",
               "name": "检索 Agent",
-              "role": "定位问题类型与可用资料",
+              "role": "抓取候选机型的价格、参数与评价",
               "status": "ok",
-              "elapsed_ms": 2100,
-              "summary": "这是自包含的逻辑题，无需外部检索。"
+              "elapsed_ms": 8100,
+              "summary": "筛出 3 款进入候选：云舟 A16、磐石 T15、云舟 A14。"
             },
             {
-              "id": "code_agent",
-              "name": "计算 Agent",
-              "role": "枚举切割方案并验证支付序列",
+              "id": "performance_agent",
+              "name": "性能 Agent",
+              "role": "判断性能是否满足使用需求",
               "status": "ok",
-              "elapsed_ms": 4300,
-              "summary": "切成 1/7、2/7、4/7 三段即可用找零覆盖 1–7 天。"
+              "elapsed_ms": 5000,
+              "summary": "云舟 A16：RTX 4050 + 16GB 内存，6999 元，三项都满足。"
             },
             {
-              "id": "verify_agent",
-              "name": "校验 Agent",
-              "role": "检查约束与格式",
+              "id": "cost_agent",
+              "name": "成本 Agent",
+              "role": "核对预算与性价比",
               "status": "ok",
-              "elapsed_ms": 2600,
-              "summary": "答案满足『仅输出数字』的格式要求。"
+              "elapsed_ms": 3600,
+              "summary": "云舟 A16 售价 6999 元，逼近但未超预算。"
+            },
+            {
+              "id": "risk_agent",
+              "name": "风险 Agent",
+              "role": "收集差评集中点与潜在风险",
+              "status": "ok",
+              "elapsed_ms": 4200,
+              "summary": "云舟 A16 有差评提到内存与参数页不符，建议核实。"
             },
             {
               "id": "master_agent",
               "name": "主控 Agent",
-              "role": "汇总并输出最终答案",
+              "role": "汇总各方结论并输出建议",
               "status": "ok",
-              "elapsed_ms": 1800,
-              "summary": "输出 3。"
+              "elapsed_ms": 2300,
+              "summary": "推荐 云舟 A16。"
             }
           ],
           "steps": [
             {
               "i": 1,
-              "agent_id": "search_agent",
-              "kind": "plan",
-              "title": "判断题型：自包含逻辑题",
-              "detail": "题目不含外部实体，不需要联网，属于可穷举验证的组合问题。",
-              "tool": null,
-              "evidence": [],
-              "confidence": 0.9,
-              "elapsed_ms": 2100
-            },
-            {
-              "i": 2,
-              "agent_id": "code_agent",
+              "agent_id": "retrieval_agent",
               "kind": "tool",
-              "title": "调用工具 `run_python_code`",
-              "detail": "枚举 7 天的所有支付/找零序列，求最小段数。",
-              "tool": "run_python_code",
+              "title": "调用工具 `search_products`",
+              "detail": "按预算与独显筛选，返回 3 款候选。",
+              "tool": "search_products",
               "evidence": [
                 {
-                  "label": "工具返回",
-                  "source": "run_python_code",
-                  "snippet": "cuts=3 -> [0.142857, 0.285714, 0.571429]\npayable 1..7 = True"
+                  "label": "候选列表",
+                  "source": "search_products",
+                  "snippet": "YZ-A16 / PS-T15 / YZ-A14"
                 }
               ],
               "confidence": null,
-              "elapsed_ms": 4300
+              "elapsed_ms": 8400
+            },
+            {
+              "i": 2,
+              "agent_id": "performance_agent",
+              "kind": "think",
+              "title": "性能 Agent：对比显卡与内存",
+              "detail": "磐石 T15 为 RTX 3050 4G；云舟 A16 为 RTX 4050 6G，显卡更强。",
+              "tool": null,
+              "evidence": [],
+              "confidence": 0.72,
+              "elapsed_ms": 5000
             },
             {
               "i": 3,
-              "agent_id": "code_agent",
+              "agent_id": "cost_agent",
               "kind": "think",
-              "title": "计算 Agent：三段分别为 1/7、2/7、4/7",
-              "detail": "第 2 天收到 2/7 找零 1/7，第 4 天收到 4/7 找零 3/7，其余天数同理可覆盖。",
+              "title": "成本 Agent：核对实际售价",
+              "detail": "磐石 T15 商品页显示 5299 元，但客服确认当前活动价为 5999 元。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.95,
-              "elapsed_ms": null
+              "evidence": [
+                {
+                  "label": "价格快照",
+                  "source": "商品页 / 客服记录",
+                  "snippet": "标价 5299（上月活动）→ 现价 5999"
+                }
+              ],
+              "confidence": 0.8,
+              "elapsed_ms": 3600
             },
             {
               "i": 4,
-              "agent_id": "verify_agent",
+              "agent_id": "risk_agent",
               "kind": "think",
-              "title": "校验 Agent：格式合规",
-              "detail": "检查了格式约束与每日可行支付序列，未发现跳步。",
+              "title": "风险 Agent：查差评与售后",
+              "detail": "云舟 A16 有已购用户反馈内存仅 8GB，与商品页标称 16GB 不一致。",
               "tool": null,
-              "evidence": [],
-              "confidence": 0.8,
-              "elapsed_ms": 2600
+              "evidence": [
+                {
+                  "label": "已购评价",
+                  "source": "商品评价区",
+                  "snippet": "「参数页写 16G，任务管理器显示 8G，客服说以实物为准」"
+                }
+              ],
+              "confidence": 0.66,
+              "elapsed_ms": 4200
             },
             {
               "i": 5,
               "agent_id": "master_agent",
               "kind": "answer",
-              "title": "主控：汇总并输出答案",
-              "detail": "3",
+              "title": "主控：汇总并给出建议",
+              "detail": "推荐 云舟 A16（YZ-A16）。6999 元，RTX 4050 独显，16GB 内存，2.15kg。",
               "tool": null,
               "evidence": [],
               "confidence": null,
-              "elapsed_ms": 1800
+              "elapsed_ms": 2300
             }
           ],
           "disagreements": [
             {
-              "topic": "最少段数",
+              "topic": "云舟 A16 的内存到底是多少",
               "options": [
                 {
-                  "agent_id": "code_agent",
-                  "claim": "7 段，每天一段最稳妥。",
-                  "evidence": "未使用找零，直接按天数切分"
+                  "agent_id": "performance_agent",
+                  "claim": "商品页标称 16GB，满足约束，推荐云舟 A16。",
+                  "evidence": "商品页参数表"
                 },
                 {
-                  "agent_id": "verify_agent",
-                  "claim": "应为 3 段：1/7、2/7、4/7，可用找零覆盖 1–7 天。",
-                  "evidence": "支付序列可构造，符合题目的『最少』要求"
+                  "agent_id": "risk_agent",
+                  "claim": "已购评价显示实际 8GB，不满足 16GB 硬约束，应排除。",
+                  "evidence": "商品评价区"
                 }
               ],
               "resolution": {
                 "chosen_agent": "master_agent",
-                "reason": "主控优先采纳了计算 Agent，未处理校验者的反对意见。"
+                "reason": "主控采信了商品页标称值，未采纳风险 Agent 的核实建议。"
               }
             }
           ],
           "error_markers": [
             {
               "step_i": 2,
-              "agent_id": "code_agent",
-              "type": "wrong_calc",
-              "detail": "未考虑找零机制，得到 7；正确答案为 3"
+              "agent_id": "performance_agent",
+              "type": "wrong_fact",
+              "detail": "采信商品页标称的 16GB 内存，实际为 8GB，导致推荐违反硬约束"
+            },
+            {
+              "step_i": 5,
+              "agent_id": "master_agent",
+              "type": "wrong_fact",
+              "detail": "最终建议基于错误的内存参数"
             }
           ]
         }

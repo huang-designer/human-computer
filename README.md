@@ -1,98 +1,104 @@
 # 一个 AI 还是一个 AI 团队？
 
-**多智能体协作可视化对用户审核与监督的影响** —— 人机交互课程项目
+**多智能体协作可视化对用户决策与监督的影响** —— 人机交互课程项目
 
-基于 2025 CCF BDCI「京东多智能体挑战赛」的任务集与京东开源框架 [OxyGent](https://github.com/jd-opensource/OxyGent)，研究多智能体系统的**协作过程可见性**如何影响用户的审核与监督能力。
+基于 2025 CCF BDCI「京东多智能体挑战赛」与京东开源框架 [OxyGent](https://github.com/jd-opensource/OxyGent)，研究多智能体系统的**协作过程可见性**如何影响用户的决策质量与监督能力。
 
-> 本项目**不参加比赛**，只借用赛题的真实任务数据与框架。
+> 本项目**不参加比赛**，只借用赛题方向与框架。
 
-## 一分钟了解
+## 研究设计
 
-赛题是 GAIA 式基准：给一个复杂问题和附件，产出**唯一确定答案**，按完全匹配准确率计分。这意味着一件事——**标准答案免费且客观**。
+场景：7000 元预算的计算机专业学生买笔记本（写代码、偶尔跑模型、需通勤携带、用 4 年）。
 
-于是研究问题可以变得很干净：**当答案质量被固定时，把协作过程给用户看，能不能帮用户发现错误？**
-
-三种条件，底层 Agent 完全相同，只改界面：
+三种条件，底层 Agent 完全相同，**只改变界面可见性**：
 
 | 条件 | 界面 | 作用 |
 |---|---|---|
-| A 单 Agent | 只显示最终答案 | 基线 |
-| B 隐藏式多 Agent | 后台协作，只显示最终答案 | 隔离多 Agent 的算法增益 |
-| C 可见式多 Agent | 显示角色分工、证据、分歧、执行时间线 | 检验透明度对监督的作用 |
+| A 单 Agent | 只显示最终建议 | 基线 |
+| B 隐藏式多 Agent | 后台协作，只显示最终建议 | 隔离多 Agent 的算法增益 |
+| C 可见式多 Agent | 显示角色分工、证据来源、意见分歧、执行时间线 | 检验透明度对监督的作用 |
 
-**B 与 C 的数据除 `condition` 字段外逐字节相同** —— 这是实验效度的基础。
+假设：**H1** B 优于 A 但未必提升错误发现；**H2** C 提升错误发现与纠错；**H3** C 增加时间与认知负荷。
 
-## 快速开始
+## 一分钟跑起来
 
 ```bash
-# 1. 跑起来看界面（零依赖，不需要 API key）
+# 零依赖，不需要 API key
 python3 -m src.experiment.server --port 8000
-#   打开 http://localhost:8000/?pid=P01&task=demo-err&cond=C
-#   demo-ok  = 系统答对
-#   demo-err = 系统答错（可体验「发现错误 → 标记有误 → 改答案」全流程）
-
-# 2. 拉取赛题数据并重新生成实验任务集
-python3 scripts/fetch_dataset.py
-python3 scripts/analyze_dataset.py      # → data/dataset_report.md
-python3 scripts/build_taskset.py        # → taskset/experiment_tasks.json
-
-# 3. 生成真实 fixture（需要 LLM API key）
-pip install -r requirements.txt
-cp .env.example .env                    # 填入 DEFAULT_LLM_API_KEY 等
-python3 -m src.oxyagents.make_fixtures --limit 3 --dry-run   # 先看会跑什么
-python3 -m src.oxyagents.make_fixtures --limit 3             # 真跑
+#   打开 http://localhost:8000/?pid=P01&task=DEMO-ERR&cond=C
+#   DEMO-OK  = 系统答对（推荐 磐石 T15）
+#   DEMO-ERR = 系统答错（推荐 云舟 A16，其内存实际只有 8GB）
 ```
+
+`DEMO-ERR` 里可以完整体验「展开证据 → 标记某步有误 → 换成正确机型」的测量流程。
+
+## 标准答案怎么来
+
+买笔记本本身没有客观对错，所以本项目建了一个**教学用模拟商品库**（8 款虚构机型，明确声明非真实商品）：
+
+1. 每款机型有 `listed`（商品页标称）与 `actual`（实际）两套参数，不一致的即「陷阱机型」。
+2. 每个任务给定预算与硬约束，由 `scripts/build_taskset.py` 用 `actual` 值求解，**要求恰好 1 个解**，否则报错退出。
+
+于是"正确"可判定：用户是否选中唯一满足全部硬约束的机型。而系统若采信标称值，就会推荐违反约束的机型——**错误是自然产生的，不是人为植入的**。
+
+8 个任务里有 3 类难点：参数不符（云舟 A16 标称 16GB 实为 8GB）、过期价格（磐石 T15 标称 5299 实为 5999）、以及一个**无解任务**（T08：预算 5000 + 独显 + ≤2kg，正确答案是"无合适机型"）。
 
 ## 目录
 
 ```
-├── 计划书.md                  研究问题、假设、实验设计、里程碑、风险
-├── docs/方案整合.md            来源整合：赛题数据 / 两个开源仓库 / OxyGent 能力的取舍
+├── 计划书.md                    研究动机、学术研究、方案与实验设计（与 PPT 四部分对应）
+├── docs/方案整合.md              外部调研吸收了什么、排除了什么、效度基础怎么补的
 ├── taskset/
-│   ├── selection.json         15 条任务的选型与人工标注（类别、预期错误）
-│   └── experiment_tasks.json  生成结果（含标准答案）
+│   ├── catalog.json             模拟商品库（listed + actual + 陷阱标注）
+│   ├── decision_tasks.json      8 个任务的约束定义
+│   └── experiment_tasks.json    生成结果（金标 + 约束文本）
 ├── scripts/
-│   ├── fetch_dataset.py       拉取验证集/测试集
-│   ├── analyze_dataset.py     结构分析 → data/dataset_report.md
-│   ├── build_taskset.py       合并标注 → 实验任务集
-│   └── make_demo_fixtures.py  生成演示数据（人工构造，非真实运行结果）
+│   ├── build_taskset.py         约束求解出金标，校验唯一性
+│   └── make_demo_fixtures.py    生成演示数据（人工构造，非真实运行结果）
 ├── src/
-│   ├── schema.py              Session 归一化结构 + 校验
-│   ├── adapters/              OxyGent trace → Session
-│   ├── oxyagents/             5 角色多智能体流水线（需 API key）
-│   └── experiment/server.py   零依赖实验服务端（托管界面 + 记录日志）
-├── web/                       三条件实验界面（原生 JS）
-├── fixtures/                  会话数据；sample.json 为演示数据
-└── data/                      原始数据与日志（gitignore）
+│   ├── schema.py                Session 归一化结构 + 校验 + 判分
+│   ├── adapters/                OxyGent trace → Session
+│   ├── oxyagents/               5 角色多智能体流水线（需 API key）
+│   └── experiment/server.py     零依赖实验服务端（托管界面 + 判分 + 记录日志）
+├── web/                         三条件实验界面（原生 JS）
+├── fixtures/                    会话数据；sample.json 为演示数据
+└── data/                        原始数据与日志（gitignore）
 ```
 
 ## 系统架构
 
 ```
-master_agent  ── 分配 / 汇总 / 处理分歧 / 输出
-   ├── search_agent   定位信息源
-   ├── reader_agent   从附件抽取事实
-   ├── code_agent     计算与核对
-   └── verify_agent   只质疑，不产出答案
+主控 Agent ── 汇总各方结论 / 处理分歧 / 给出建议
+   ├── 检索 Agent     按硬约束初筛候选机型
+   ├── 性能 Agent     只判断 CPU / 显卡是否够用（不看价格）
+   ├── 成本 Agent     只核对预算与性价比（识别过期价格）
+   └── 风险 Agent     只挖风险（参数不符 / 差评 / 售后）
 ```
 
-校验与生成分离是刻意的：既提升质量，也直接产出 C 条件里「分歧」区块的数据。
+性能 Agent 推荐、风险 Agent 挖坑——这个刻意的张力就是 C 条件「分歧」区块的数据来源。
 
 ## 状态
 
 | 阶段 | 状态 |
 |---|---|
-| 赛题真实形态核查（100 条验证集） | ✅ 完成 |
-| 开源方案调研（3 个仓库） | ✅ 完成 |
-| 实验任务集（15 条） | ✅ 完成 |
-| 三条件界面 + 行为日志 | ✅ 完成 |
+| 商品库 + 8 个任务 + 金标唯一性校验 | ✅ 完成 |
+| 三条件界面 + 行为日志 + 判分链路 | ✅ 完成 |
 | OxyGent trace → Session 适配 | ✅ 完成（已在真实 trace 验证） |
 | 多 Agent 流水线 | ⚠️ 代码完成，未跑过（**缺 LLM API key**） |
 | 真实 fixture 生成 | ⬜ 待 API key |
 | 用户实验 | ⬜ |
 
+生成真实 fixture：
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env          # 填 DEFAULT_LLM_API_KEY
+python3 -m src.oxyagents.make_fixtures --dry-run
+python3 -m src.oxyagents.make_fixtures
+```
+
 ## 说明
 
-- `fixtures/sample.json` 是**人工构造**的演示数据，仅用于跑通界面，不得作为实验数据分析。
-- 赛题数据版权归赛方，经第三方仓库（MIT）获取，仅用于课程研究，不再分发原始附件。
-- 不引用任何第三方仓库宣称的准确率数字（其文档中的 60–70% 与其提交结果不符）。
+- `taskset/catalog.json` 的机型与参数均为**虚构**，报告与论文中不得据此对真实商品下结论。
+- `fixtures/sample.json` 是人工构造的演示数据，仅用于跑通界面，不得作为实验数据分析。
+- 不引用任何第三方参赛仓库宣称的准确率数字。

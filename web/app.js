@@ -6,9 +6,10 @@ const S = {
   cond: "C",
   spec: {},
   session: null,
+  catalog: [],
   t0: 0,
-  expanded: new Set(),   // 展开过的步骤序号
-  flags: new Set(),      // 被标记为「有误」的步骤序号
+  expanded: new Set(),
+  flags: new Set(),
   events: 0,
 };
 
@@ -19,19 +20,17 @@ const params = new URLSearchParams(location.search);
 function log(event, payload = {}) {
   S.events++;
   $("logCount").textContent = `${S.events} events`;
-  const body = {
-    pid: S.pid || "anonymous",
-    task_id: S.taskId,
-    condition: S.cond,
-    event,
-    elapsed_ms: S.t0 ? Date.now() - S.t0 : 0,
-    payload,
-  };
-  // 日志失败不应打断被试，静默忽略
   fetch("/api/log", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      pid: S.pid || "anonymous",
+      task_id: S.taskId,
+      condition: S.cond,
+      event,
+      elapsed_ms: S.t0 ? Date.now() - S.t0 : 0,
+      payload,
+    }),
   }).catch(() => {});
 }
 
@@ -50,17 +49,21 @@ function startTimer() {
 async function boot() {
   S.pid = params.get("pid") || "";
   $("pid").value = S.pid;
-  $("pid").addEventListener("change", (e) => (S.pid = e.target.value.trim()));
+  $("pid").addEventListener("change", (e) => { S.pid = e.target.value.trim(); });
 
-  const data = await (await fetch("/api/tasks")).json();
-  S.spec = data.condition_spec || {};
+  const [taskData, catalogData] = await Promise.all([
+    fetch("/api/tasks").then((r) => r.json()),
+    fetch("/api/catalog").then((r) => r.json()),
+  ]);
+  S.spec = taskData.condition_spec || {};
+  S.catalog = catalogData.products || [];
 
   const sel = $("taskSel");
   sel.innerHTML = "";
-  for (const t of data.tasks) {
+  for (const t of taskData.tasks) {
     const o = document.createElement("option");
     o.value = t.task_id;
-    o.textContent = `${t.demo ? "示例" : "L" + t.level} · ${t.query.slice(0, 34)}${t.has_fixture ? "" : "（无结果）"}`;
+    o.textContent = `${t.demo ? "示例" : t.task_id} · ${(t.title || t.query).slice(0, 26)}${t.has_fixture ? "" : "（未生成）"}`;
     o.disabled = !t.has_fixture;
     sel.appendChild(o);
   }
@@ -75,10 +78,20 @@ async function boot() {
     tabs.appendChild(b);
   }
 
-  S.taskId = params.get("task") || (data.tasks.find((t) => t.has_fixture) || {}).task_id || "";
+  S.taskId = params.get("task") || (taskData.tasks.find((t) => t.has_fixture) || {}).task_id || "";
   S.cond = params.get("cond") || "C";
   sel.value = S.taskId;
   sel.onchange = () => { S.taskId = sel.value; syncUrl(); loadSession(); };
+
+  // 「换成别的机型」下拉
+  $("otherSel").innerHTML = S.catalog
+    .map((p) => `<option value="${p.id}">${p.name} · ¥${p.price}</option>`).join("");
+  document.querySelectorAll('input[name="decide"]').forEach((r) => {
+    r.onchange = () => {
+      $("otherSel").disabled = r.value !== "other" || !r.checked;
+      log("choose_option", { option: r.value });
+    };
+  });
 
   if (S.taskId) loadSession();
 }
@@ -94,7 +107,6 @@ function syncUrl() {
 /* ---------------- 加载 ---------------- */
 async function loadSession() {
   for (const b of $("condTabs").children) b.classList.toggle("active", b.dataset.cond === S.cond);
-
   $("content").innerHTML = `<p class="muted center">加载中…</p>`;
   $("actionCard").hidden = true;
   $("surveyCard").hidden = true;
@@ -111,46 +123,71 @@ async function loadSession() {
   S.flags.clear();
   render();
   startTimer();
-  log("view_task", { level: S.session.task.level });
+  log("view_task", {});
 }
 
 /* ---------------- 渲染 ---------------- */
-function render() {
-  const s = S.session;
-  const spec = S.spec[s.condition] || { label: s.condition, description: "" };
-
-  $("levelPill").textContent = `L${s.task.level}`;
-  $("condPill").textContent = `条件 ${s.condition} · ${spec.label}`;
-  $("taskMeta").textContent = "";
-  $("query").textContent = s.task.query;
-
-  const parts = [];
-  parts.push(renderAnswer(s, spec));
-  if ((spec.show || []).includes("agents")) parts.push(renderAgents(s));
-  if ((spec.show || []).includes("disagreements") && (s.disagreements || []).length) parts.push(renderDisagreements(s));
-  if ((spec.show || []).includes("steps")) parts.push(renderSteps(s));
-
-  $("content").innerHTML = parts.join("");
-  bindDynamic();
-
-  $("actionCard").hidden = false;
-  $("answerBox").value = s.final_answer || "";
-  $("actionHint").textContent =
-    s.condition === "C"
-      ? "你可以展开每一步的证据；如果发现某一步有错，点该步的「标记有误」。"
-      : "如果你认为系统答案不对，可以直接改成你判断的答案。";
-}
-
 function esc(t) {
   return String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
-function renderAnswer(s, spec) {
+function render() {
+  const s = S.session;
+  const spec = S.spec[s.condition] || { label: s.condition, description: "" };
+
+  $("levelPill").textContent = s.task.level === "decision" ? "购买决策" : `L${s.task.level}`;
+  $("condPill").textContent = `条件 ${s.condition} · ${spec.label}`;
+  $("taskTitle").textContent = s.task.title || "";
+  $("query").textContent = s.task.query;
+  $("chips").innerHTML = constraintChips(s.task.constraints);
+
+  const parts = [renderRecommendation(s, spec)];
+  if ((spec.show || []).includes("agents")) parts.push(renderAgents(s));
+  if ((spec.show || []).includes("disagreements") && (s.disagreements || []).length) parts.push(renderDisagreements(s));
+  if ((spec.show || []).includes("steps")) parts.push(renderSteps(s));
+  $("content").innerHTML = parts.join("");
+  bindDynamic();
+
+  $("actionCard").hidden = false;
+  $("actionHint").textContent =
+    s.condition === "C"
+      ? "可以展开每一步查看证据来源；发现某一步有问题，点该步的「标记有误」。"
+      : "如果不同意系统建议，可以换成别的机型，或直接判定没有机型满足条件。";
+
+  const rec = s.recommendation || {};
+  const acceptLabel = document.querySelector('label.opt span');
+  if (acceptLabel) acceptLabel.textContent = rec.name ? `采纳系统建议（${rec.name}）` : "采纳系统建议";
+  if (rec.id) $("otherSel").value = rec.id;
+}
+
+function constraintChips(c) {
+  if (!c) return "";
+  const map = [
+    ["budget_max", (v) => `预算 ≤ ¥${v}`],
+    ["require_discrete_gpu", () => "必须独显"],
+    ["min_ram_gb", (v) => `内存 ≥ ${v}GB`],
+    ["min_storage_gb", (v) => `存储 ≥ ${v}GB`],
+    ["max_weight_kg", (v) => `重量 ≤ ${v}kg`],
+    ["require_official", () => "必须自营售后"],
+    ["min_pos_rate", (v) => `好评率 ≥ ${Math.round(v * 100)}%`],
+  ];
+  return map
+    .filter(([k]) => c[k] !== undefined && c[k] !== false)
+    .map(([k, f]) => `<span class="chip">${esc(f(c[k]))}</span>`)
+    .join("");
+}
+
+function renderRecommendation(s, spec) {
+  const r = s.recommendation || { name: s.final_answer, price: "", reason: "" };
   return `
     <div class="card">
       <div class="answer-card">
-        <h3>系统给出的答案</h3>
-        <div class="answer-value">${esc(s.final_answer) || '<span class="muted">（无）</span>'}</div>
+        <h3>系统给出的建议</h3>
+        <div class="answer-line">
+          <span class="answer-value">${esc(r.name || "（无）")}</span>
+          ${r.price ? `<span class="price">¥${r.price}</span>` : ""}
+        </div>
+        ${r.reason ? `<p class="reason">${esc(r.reason)}</p>` : ""}
       </div>
       <p class="hint">${esc(spec.description || "")}</p>
     </div>`;
@@ -160,35 +197,32 @@ function renderAgents(s) {
   const cards = (s.agents || []).map((a) => `
     <div class="agent ${esc(a.status)}">
       <span class="ms">${a.elapsed_ms ? (a.elapsed_ms / 1000).toFixed(1) + "s" : ""}</span>
-      <div class="name">${esc(a.name)}
-        ${a.status !== "ok" ? `<span class="badge">${esc(a.status)}</span>` : ""}</div>
+      <div class="name">${esc(a.name)}${a.status !== "ok" ? `<span class="badge">${esc(a.status)}</span>` : ""}</div>
       <div class="role">${esc(a.role)}</div>
       <div class="sum">${esc(a.summary)}</div>
     </div>`).join("");
   return `
     <div class="card">
-      <h3 style="margin:0 0 10px;font-size:13px;color:#7a8291;letter-spacing:.04em">参与本次任务的 Agent</h3>
+      <h3 class="block-title">参与本次任务的 Agent</h3>
       <div class="agents">${cards}</div>
     </div>`;
-}
-
-function renderDisagreements(s) {
-  const items = s.disagreements.map((d, k) => `
-    <div class="dis" style="margin-bottom:10px">
-      <h4>分歧 ${k + 1}：${esc(d.topic)}</h4>
-      ${(d.options || []).map((o) => `
-        <div class="dis-opt">
-          <div class="who">${esc(agentName(s, o.agent_id))}</div>
-          <div>${esc(o.claim)}</div>
-        </div>`).join("")}
-      ${d.resolution ? `<div class="dis-res">主控采纳：<b>${esc(agentName(s, d.resolution.chosen_agent))}</b> —— ${esc(d.resolution.reason)}</div>` : ""}
-    </div>`).join("");
-  return `<div class="card" data-block="disagreements">${items}</div>`;
 }
 
 function agentName(s, id) {
   const a = (s.agents || []).find((x) => x.id === id);
   return a ? a.name : id;
+}
+
+function renderDisagreements(s) {
+  const items = s.disagreements.map((d, k) => `
+    <div class="dis">
+      <h4>分歧 ${k + 1}：${esc(d.topic)}</h4>
+      ${(d.options || []).map((o) => `
+        <div class="dis-opt"><div class="who">${esc(agentName(s, o.agent_id))}</div>
+        <div>${esc(o.claim)}</div></div>`).join("")}
+      ${d.resolution ? `<div class="dis-res">主控采纳：<b>${esc(agentName(s, d.resolution.chosen_agent))}</b> —— ${esc(d.resolution.reason)}</div>` : ""}
+    </div>`).join("");
+  return `<div class="card">${items}</div>`;
 }
 
 function renderSteps(s) {
@@ -215,7 +249,7 @@ function renderSteps(s) {
   }).join("");
   return `
     <div class="card">
-      <h3 style="margin:0 0 12px;font-size:13px;color:#7a8291;letter-spacing:.04em">执行时间线</h3>
+      <h3 class="block-title">执行时间线</h3>
       <ul class="timeline">${items}</ul>
     </div>`;
 }
@@ -240,17 +274,27 @@ function bindDynamic() {
 }
 
 /* ---------------- 提交 ---------------- */
-function submit(accepted) {
+function currentChoice() {
+  const v = (document.querySelector('input[name="decide"]:checked') || {}).value || "accept";
+  if (v === "accept") return (S.session.recommendation || {}).id || S.session.final_answer;
+  if (v === "other") return $("otherSel").value;
+  return "无合适机型";
+}
+
+function submit() {
   const s = S.session;
-  const userAnswer = accepted ? s.final_answer : $("answerBox").value.trim();
-  if (!userAnswer) { $("answerBox").focus(); return; }
+  const mode = (document.querySelector('input[name="decide"]:checked') || {}).value;
+  const userAnswer = currentChoice();
   const elapsed = Date.now() - S.t0;
+
   log("submit", {
-    accepted_ai: accepted,
+    mode,
     user_answer: userAnswer,
+    note: $("note").value.trim(),
     expanded_steps: [...S.expanded],
     flagged_steps: [...S.flags],
   });
+
   fetch("/api/response", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -258,10 +302,11 @@ function submit(accepted) {
       pid: S.pid || "anonymous",
       task_id: s.task.task_id,
       condition: s.condition,
-      ai_answer: s.final_answer,
+      ai_answer: (s.recommendation || {}).id || s.final_answer,
       user_answer: userAnswer,
       gold: s.task.answer,
-      accepted_ai: accepted,
+      mode,
+      note: $("note").value.trim(),
       elapsed_ms: elapsed,
       expanded_steps: [...S.expanded],
       flagged_steps: [...S.flags],
@@ -307,8 +352,7 @@ function saveSurvey() {
 }
 
 /* ---------------- 绑定 ---------------- */
-$("acceptBtn").onclick = () => submit(true);
-$("submitBtn").onclick = () => submit(false);
+$("submitBtn").onclick = submit;
 $("nextBtn").onclick = saveSurvey;
 window.addEventListener("beforeunload", () => { if (S.session) log("leave_task", {}); });
 

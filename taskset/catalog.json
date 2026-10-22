@@ -1,0 +1,72 @@
+{
+  "note": "模拟商品库。机型与参数均为教学用虚构数据，不代表任何真实在售商品。字段含 listed（商品页标称）与 actual（实测/客服确认）两套值，两者不一致的机型即为「陷阱机型」，用于构造可判定的错误。",
+  "schema_version": "1.0",
+  "products": [
+    {
+      "id": "YZ-A14",
+      "name": "云舟 A14",
+      "listed": { "price": 6299, "cpu": "R7-8845H", "gpu": "Radeon 780M 集显", "gpu_class": "integrated", "ram_gb": 16, "storage_gb": 512, "weight_kg": 1.39, "screen_inch": 14, "battery_h": 8.5, "pos_rate": 0.94, "after_sales": "京东自营 2 年" },
+      "actual": { "price": 6299, "ram_gb": 16, "weight_kg": 1.39, "storage_gb": 512 },
+      "issues": ["高负载时风扇噪音明显"],
+      "tag": "轻薄办公"
+    },
+    {
+      "id": "YZ-A16",
+      "name": "云舟 A16",
+      "listed": { "price": 6999, "cpu": "R7-8845H", "gpu": "RTX 4050 6G", "gpu_class": "discrete", "ram_gb": 16, "storage_gb": 512, "weight_kg": 2.15, "screen_inch": 16, "battery_h": 6.0, "pos_rate": 0.92, "after_sales": "京东自营 2 年" },
+      "actual": { "price": 6999, "ram_gb": 8, "weight_kg": 2.15, "storage_gb": 512 },
+      "issues": ["商品页写 16GB 内存，但参数表与已购用户实测为 8GB", "机身较重，通勤负担明显"],
+      "tag": "入门创作",
+      "trap": { "type": "spec_mismatch", "field": "ram_gb", "detail": "商品页标称 16GB，实际为 8GB" }
+    },
+    {
+      "id": "XY-P14",
+      "name": "星野 Pro14",
+      "listed": { "price": 7499, "cpu": "Ultra 7 155H", "gpu": "Arc 集显", "gpu_class": "integrated", "ram_gb": 32, "storage_gb": 1024, "weight_kg": 1.45, "screen_inch": 14, "battery_h": 9.0, "pos_rate": 0.95, "after_sales": "京东自营 3 年" },
+      "actual": { "price": 7499, "ram_gb": 32, "weight_kg": 1.45, "storage_gb": 1024 },
+      "issues": ["价格偏高", "高负载下键盘区域温热"],
+      "tag": "高端轻薄"
+    },
+    {
+      "id": "XY-P16",
+      "name": "星野 Pro16",
+      "listed": { "price": 8299, "cpu": "Ultra 7 155H", "gpu": "RTX 4060 8G", "gpu_class": "discrete", "ram_gb": 32, "storage_gb": 1024, "weight_kg": 2.30, "screen_inch": 16, "battery_h": 5.5, "pos_rate": 0.93, "after_sales": "京东自营 3 年" },
+      "actual": { "price": 8299, "ram_gb": 32, "weight_kg": 2.30, "storage_gb": 1024 },
+      "issues": ["较重", "续航一般"],
+      "tag": "高性能创作"
+    },
+    {
+      "id": "PS-T14",
+      "name": "磐石 T14",
+      "listed": { "price": 5499, "cpu": "i5-13500H", "gpu": "Iris Xe 集显", "gpu_class": "integrated", "ram_gb": 16, "storage_gb": 512, "weight_kg": 1.55, "screen_inch": 14, "battery_h": 7.5, "pos_rate": 0.90, "after_sales": "第三方店铺 1 年" },
+      "actual": { "price": 5499, "ram_gb": 16, "weight_kg": 1.55, "storage_gb": 512 },
+      "issues": ["售后为第三方，返修周期长"],
+      "tag": "性价比办公"
+    },
+    {
+      "id": "PS-T15",
+      "name": "磐石 T15",
+      "listed": { "price": 5299, "cpu": "i5-13500H", "gpu": "RTX 3050 4G", "gpu_class": "discrete", "ram_gb": 16, "storage_gb": 512, "weight_kg": 2.05, "screen_inch": 15.6, "battery_h": 6.5, "pos_rate": 0.88, "after_sales": "第三方店铺 1 年" },
+      "actual": { "price": 5999, "ram_gb": 16, "weight_kg": 2.05, "storage_gb": 512 },
+      "issues": ["屏幕色域偏低，不适合修图", "价格快照为上月活动价"],
+      "tag": "低价独显",
+      "trap": { "type": "stale_price", "detail": "商品页 5299 为上月活动价快照，当前实际 5999" }
+    },
+    {
+      "id": "QY-A13",
+      "name": "轻羽 Air13",
+      "listed": { "price": 4999, "cpu": "Ultra 5 125H", "gpu": "Arc 集显", "gpu_class": "integrated", "ram_gb": 16, "storage_gb": 512, "weight_kg": 1.18, "screen_inch": 13.3, "battery_h": 10.0, "pos_rate": 0.91, "after_sales": "京东自营 2 年" },
+      "actual": { "price": 4999, "ram_gb": 16, "weight_kg": 1.18, "storage_gb": 512 },
+      "issues": ["接口少，需扩展坞"],
+      "tag": "极致便携"
+    },
+    {
+      "id": "JF-G16",
+      "name": "疾风 G16",
+      "listed": { "price": 8999, "cpu": "i9-14900HX", "gpu": "RTX 4070 8G", "gpu_class": "discrete", "ram_gb": 32, "storage_gb": 1024, "weight_kg": 2.60, "screen_inch": 16, "battery_h": 4.5, "pos_rate": 0.96, "after_sales": "京东自营 2 年" },
+      "actual": { "price": 8999, "ram_gb": 32, "weight_kg": 2.60, "storage_gb": 1024 },
+      "issues": ["很重", "续航短", "风扇噪音大"],
+      "tag": "游戏性能"
+    }
+  ]
+}

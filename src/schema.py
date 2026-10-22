@@ -60,20 +60,24 @@ CONDITIONS = ("A", "B", "C")
 CONDITION_SPEC: dict[str, dict[str, Any]] = {
     "A": {
         "label": "单 Agent",
-        "description": "一个 Agent 直接完成检索、比较与输出，只显示最终答案。",
+        "description": "一个 Agent 直接完成检索、比较和推荐，用户只看到最终建议。",
         "show": ["answer"],
     },
     "B": {
         "label": "隐藏式多 Agent",
-        "description": "多个 Agent 在后台分工协作，用户只看到最终答案。",
+        "description": "多个 Agent 在后台分工协作，用户仍只看到最终建议。",
         "show": ["answer"],
     },
     "C": {
         "label": "可见式多 Agent",
-        "description": "显示角色分工、执行时间线、证据来源与意见分歧，可在关键节点纠正。",
+        "description": "显示角色分工、证据来源与意见分歧，允许用户查看并纠正关键节点。",
         "show": ["answer", "agents", "steps", "disagreements"],
     },
 }
+
+#: 无解任务的答案标记
+NO_SOLUTION = "NONE"
+_NONE_PATTERN = re.compile(r"(none|无合适|无符合|没有合适|都不满足|都不符合)", re.IGNORECASE)
 
 _ANSWER_NORMALIZE = re.compile(r"[\s\"'`，。；：、]+")
 
@@ -84,6 +88,13 @@ def normalize_answer(a: object) -> str:
 
 
 def is_correct(final: object, gold: object) -> bool:
+    """判定用户/系统的选择是否正确。
+
+    gold 为商品 id（如 "PS-T15"）时精确比对；gold 为 NO_SOLUTION 时，
+    只要用户表达了「没有合适机型」即算正确。
+    """
+    if str(gold).strip().upper() == NO_SOLUTION:
+        return bool(_NONE_PATTERN.search(str(final or "")))
     return normalize_answer(final) == normalize_answer(gold)
 
 

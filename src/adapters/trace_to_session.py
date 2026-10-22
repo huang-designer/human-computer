@@ -32,13 +32,15 @@ from src.schema import is_correct
 
 #: Agent 展示名。新增角色时在这里登记，前端按此渲染。
 AGENT_LABELS: dict[str, tuple[str, str]] = {
-    "master_agent": ("主控 Agent", "拆分任务、汇总各 Agent 结论、输出最终答案"),
-    "search_agent": ("检索 Agent", "定位信息源，抓取候选页面与文档"),
-    "reader_agent": ("阅读 Agent", "从附件（PDF/视频/图片/表格）中抽取事实"),
+    # 购买决策场景（与 ppt 第 5 页一致）
+    "master_agent": ("主控 Agent", "汇总各方结论、处理分歧、给出最终建议"),
+    "retrieval_agent": ("检索 Agent", "抓取候选机型的价格、参数与评价，按硬约束初筛"),
+    "performance_agent": ("性能 Agent", "判断性能（CPU / 显卡）是否满足使用需求"),
+    "cost_agent": ("成本 Agent", "核对预算与性价比，识别过期价格"),
+    "risk_agent": ("风险 Agent", "收集差评集中点、参数不符与售后风险"),
+    # 通用兜底
     "file_agent": ("文件 Agent", "读取并解析附件"),
     "code_agent": ("计算 Agent", "执行代码完成计算与数据核对"),
-    "verify_agent": ("校验 Agent", "检查答案是否满足题目格式与约束，指出可疑步骤"),
-    "planner_agent": ("规划 Agent", "把任务拆成可执行步骤"),
 }
 
 

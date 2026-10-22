@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "web"
 FIXTURES = ROOT / "fixtures"
 TASKSET = ROOT / "taskset" / "experiment_tasks.json"
+CATALOG = ROOT / "taskset" / "catalog.json"
 LOGS = ROOT / "data" / "logs"
 
 
@@ -59,7 +60,14 @@ def demo_tasks() -> list[dict]:
         return []
     data = json.loads(bundle.read_text(encoding="utf-8"))
     return [
-        {"task_id": tid, "level": v.get("level", "?"), "query": v.get("query", ""), "demo": True}
+        {
+            "task_id": tid,
+            "level": "decision",
+            "title": f"示例 · {'系统答对' if 'ERR' not in tid else '系统答错'}",
+            "query": v.get("query", ""),
+            "constraint_text": v.get("constraints", ""),
+            "demo": True,
+        }
         for tid, v in data.get("tasks", {}).items()
     ]
 
@@ -118,10 +126,20 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/api/health":
             self._json({"ok": True, "ts": time.time(), "conditions": CONDITIONS})
             return
+        if u.path == "/api/catalog":
+            data = json.loads(CATALOG.read_text(encoding="utf-8"))
+            # 只下发商品页可见的信息（listed），actual 值属于评分依据，不能给被试看
+            items = [
+                {"id": p["id"], "name": p["name"], "tag": p.get("tag", ""), **p["listed"], "issues": p.get("issues", [])}
+                for p in data["products"]
+            ]
+            self._json({"products": items, "note": data.get("note", "")})
+            return
         if u.path == "/api/tasks":
             seen = {t["task_id"] for t in demo_tasks()}
             tasks = demo_tasks() + [t for t in load_tasks() if t["task_id"] not in seen]
             for t in tasks:
+                t.setdefault("level", "decision")
                 t["has_fixture"] = all((FIXTURES / t["task_id"] / f"{c}.json").exists() for c in CONDITIONS) or bool(
                     t.get("demo")
                 )

@@ -147,3 +147,24 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   padding: 6px 20px; font-size: 11px; color: var(--muted); background: #fff;
   border-top: 1px solid var(--line);
 }
+
+/* ---------- 决策任务补充样式 ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+  font-size: 12px; padding: 2px 9px; border-radius: 999px;
+  background: #eef2f8; color: #3b4657; border: 1px solid #e1e7f0;
+}
+.answer-line { display: flex; align-items: baseline; gap: 10px; }
+.price { color: var(--accent); font-weight: 700; font-size: 16px; }
+.reason { margin: 8px 0 0; color: #444; font-size: 13px; }
+.block-title { margin: 0 0 10px; font-size: 13px; color: var(--muted); letter-spacing: .04em; font-weight: 600; }
+.action-card h3 { margin: 0 0 10px; font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+.decide { display: grid; gap: 8px; }
+.opt {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+}
+.opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.opt select { margin-left: auto; }
+.action-foot { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+.action-foot input { flex: 1; }
